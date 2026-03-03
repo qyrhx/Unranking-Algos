@@ -9,7 +9,7 @@ function divmod(a, b) {
 }
 
 const stirling_numbers_cache = new LRUCache<string, bigint>({max: 1000,});
-function stirling_numbers(n: bigint, k: bigint): bigint {
+export function stirling_numbers(n: bigint, k: bigint): bigint {
     // There is exactly 1 way to partition 0 elements into 0 groups.
     if (n == 0 && k == 0) return 1;
     // ex: Partition 0 elements into 3 groups -> impossible
@@ -26,38 +26,38 @@ function stirling_numbers(n: bigint, k: bigint): bigint {
 }
 
 const lah_numbers_cache = new LRUCache<string, bigint>({max: 1000,});
-function lah_numbers(n: bigint, k: bigint): bigint {
+export function lah_numbers(n: bigint, k: bigint): bigint {
     if (n == 0 && k == 0) return 1;
     if (n == 0 || k == 0) return 0;
     if (n == k) return 1;
 
-    const s = serialize_nk(n, k);
+    const key = serialize_nk(n, k);
 
-    const cached = lah_numbers_cache.get(s);
+    const cached = lah_numbers_cache.get(key);
     if (cached !== undefined) return cached;
 
-    const res = lah_numbers(n-1,k-1) + (n+k-1)*lah_numbers(n-1,k);
-    stirling_numbers_cache.set(s, res);
+    const res = lah_numbers(n-1, k-1) + (n+k-1)*lah_numbers(n-1, k);
+    stirling_numbers_cache.set(key, res);
     return res;
 }
 
-function unranking_stirling(n, k, r): number[][] {
+export function unrank_stirling(n, k, r): number[][] {
     if (n == 0 || k == 0)
         return [];
     if (r < stirling_numbers(n-1, k-1)) {
-        let res = unranking_stirling(n-1, k-1, r);
+        let res = unrank_stirling(n-1, k-1, r);
         res.push([n]);
         return res
     }
 
     const r2 = r - stirling_numbers(n-1, k-1);
     const [pos, r3] = divmod(r2, stirling_numbers(n-1, k));
-    let us = unranking_stirling(n-1, k, r3);
+    let us = unrank_stirling(n-1, k, r3);
     us[pos].push(n);
     return us;
 }
 
-function unranking_lah(n, k, r) {
+export function unrank_lah(n, k, r) {
     if (n == 0 && k == 0)
         return [];
     if (n == 0 || k == 0)
@@ -67,14 +67,14 @@ function unranking_lah(n, k, r) {
 
     let fst_case_cnt = lah_numbers(n-1, k-1);
     if (r < fst_case_cnt) { // Singleton
-        let res = unranking_lah(n-1, k-1, r);
+        let res = unrank_lah(n-1, k-1, r);
         res.push([n]);
         return res;
     }
     // Inserer dans une des boites
     const r2 = r - fst_case_cnt;
     let [pos, r3] = divmod(r2, lah_numbers(n-1, k));
-    let res = unranking_lah(n-1, k, r3);
+    let res = unrank_lah(n-1, k, r3);
     // trouver l'indice
     for (const boite of res) {
         if (pos < boite.length + 1) {
@@ -86,7 +86,7 @@ function unranking_lah(n, k, r) {
     return res
 }
 
-function unrank_perm(n, r) { // unrank de n! different orders
+export function unrank_perm(n, r) { // unrank de n! different orders
     let elems = Array.from({ length: n }, (_, i) => i + 1); // [1, 2, ..., n]
     let perm = [];
 
@@ -99,7 +99,7 @@ function unrank_perm(n, r) { // unrank de n! different orders
     return perm;
 }
 
-function unranking_ordered_stirling(n, k, r) {
+export function unrank_ordered_stirling(n, k, r) {
     // Base cases
     if (k === 1) {
         return [Array.from({ length: n }, (_, i) => i + 1)]; // one block (order inside doesn't matter)
@@ -114,7 +114,7 @@ function unranking_ordered_stirling(n, k, r) {
     if (r < cntA) {
         let [pos, newR] = divmod(r, ordered_stirling_numbers(n - 1, k - 1));
         r = newR;
-        let res = unranking_ordered_stirling(n - 1, k - 1, r);
+        let res = unrank_ordered_stirling(n - 1, k - 1, r);
         res.splice(pos, 0, [n]);
         return res;
     }
@@ -123,13 +123,13 @@ function unranking_ordered_stirling(n, k, r) {
     r = r - cntA;
     let [pos, newR] = divmod(r, ordered_stirling_numbers(n - 1, k));
     r = newR;
-    let res = unranking_ordered_stirling(n - 1, k, r);
+    let res = unrank_ordered_stirling(n - 1, k, r);
     res[pos].push(n);
     // res[pos].sort(); // commented out as in original
     return res;
 }
 
-function factorial(n) {
+export function factorial(n) {
     if (n < 0) throw new Error("Negative numbers not allowed");
     if (n <= 1) return 1;
 
@@ -140,7 +140,7 @@ function factorial(n) {
     return result;
 }
 const ordered_stirling_cache = new LRUCache<string, number>({max: 1000});
-function ordered_stirling_numbers(n, k): bigint {
+export function ordered_stirling_numbers(n, k): bigint {
     const key = serialize_nk(n, k);
 
     // Check cache first
@@ -166,7 +166,7 @@ function ordered_stirling_numbers(n, k): bigint {
 }
 
 const int_partitions_cache = new LRUCache({max: 1000});
-function int_partitions(n, k) {
+export function int_partitions(n, k): bigint {
     // Base cases
     if (n < 1) return 0;
     if (k === 1 || n === k) return 1;
@@ -180,7 +180,7 @@ function int_partitions(n, k) {
     return result;
 }
 
-function unrank_int_partitions(n, k, r) {
+export function unrank_int_partitions(n, k, r) {
     // Base cases
     if (n < 1) return [];
     if (k === 1) return [n];
@@ -197,23 +197,22 @@ function unrank_int_partitions(n, k, r) {
     }
 }
 
-// quick sanity check
-// let n = 5, k = 3;
-// let all_os = [];
-// for (let r = 0; r < ordered_stirling_numbers(n, k); r++) {
-//     all_os.push(unranking_ordered_stirling(n, k, r));
-// }
-// console.log(all_os.length, ordered_stirling_numbers(n, k));
-//
-// console.log(`Stirling(50, 25): ${stirling_numbers(50, 25)}`);
-// console.log(`Lah(50, 25): ${lah_numbers(50, 25)}`);
-// console.log("Unrank Stirling(5, 3, 15): ", unranking_stirling(5, 3, 15));
-//
-//
-const n = 11, k = 4;
-const x = [];
-for (let i = 0; i < int_partitions(n, k); i++) {
-    x.push(unrank_int_partitions(n, k, i));
+const ordered_lah_cache = new LRUCache({max: 1000});
+export function ordered_lah_numbers(n, k): bigint {
+    // Base cases
+    if (k === 1 || k === n) {
+        return factorial(n);
+    }
+
+    const key = serialize_nk(n, k);
+    const cached = ordered_lah_cache.get(key);
+    if (cached !== undefined) return cached;
+
+    const result = k * ordered_lah_numbers(n - 1, k - 1) +
+                   (n - 1 + k) * ordered_lah_numbers(n - 1, k);
+
+    ordered_lah_cache.set(key, result);
+    return result;
 }
-console.log(`Length: ${x.length}`);
-console.log(x);
+
+export function unrank_ordered_lah() {}
