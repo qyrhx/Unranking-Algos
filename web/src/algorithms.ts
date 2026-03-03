@@ -1,5 +1,14 @@
 import { LRUCache } from "lru-cache";
 
+export const algoMap = new Map();
+
+algoMap.set("Stirling", {rankFn: stirling_numbers, unrankFn: unrank_stirling});
+algoMap.set("Ordered Stirling", {rankFn: ordered_stirling_numbers, unrankFn: unrank_ordered_stirling});
+algoMap.set("Lah", {rankFn: lah_numbers, unrankFn: unrank_lah});
+algoMap.set("Ordered Lah", {rankFn: ordered_lah_numbers, unrankFn: unrank_ordered_lah});
+algoMap.set("Int Partition", {rankFn: int_partitions, unrankFn: unrank_int_partitions});
+
+
 function serialize_nk(n, k): string {
     return `${n},${k}`
 }

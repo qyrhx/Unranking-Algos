@@ -1,54 +1,45 @@
 import { useState } from "react";
-import { stirling_numbers, lah_numbers, ordered_stirling_numbers,
-         ordered_lah_numbers, int_partitions,
-         unrank_stirling, unrank_lah, unrank_ordered_stirling,
-         unrank_ordered_lah, unrank_int_partitions } from './algorithms';
 
-type Algorithm =
-  | "stirling"
-  | "orderedStirling"
-  | "lah"
-  | "orderedLah"
-  | "intPartition";
+import { algoMap } from "./algorithms";
 
 export default function App() {
-  // Inputs
-  const [n, setN] = useState<number>(0);
+    // Inputs
+    const [n, setN] = useState<number>(0);
   const [k, setK] = useState<number>(0);
   const [r, setR] = useState<number>(0);
 
-  // Always have a default selected algorithm
-  const [selectedAlgo, setSelectedAlgo] = useState<Algorithm>("stirling");
+    // Always have a default selected algorithm
+    const [selectedAlgo, setSelectedAlgo] = useState(Array.from(algoMap.keys())[0]);
 
-  const [result, setResult] = useState<any>("");
+    const [result, setResult] = useState<any>("");
 
-  // Map algorithms to their functions
-  const rankFuncs: Record<Algorithm, (n: number, k: number) => any> = {
-    stirling: stirling_numbers,
-    orderedStirling: ordered_stirling_numbers,
-    lah: lah_numbers,
-    orderedLah: ordered_lah_numbers,
-    intPartition: int_partitions,
-  };
+    const calc_worker = new Worker(
+        new URL("./worker.ts", import.meta.url),
+        { type: "module" }
+    );
+    calc_worker.onmessage = (e) => {
+        setResult(e.data);
+    };
 
-  const unrankFuncs: Record<Algorithm, (n: number, k: number, r: number) => any> = {
-    stirling: unrank_stirling,
-    orderedStirling: unrank_ordered_stirling,
-    lah: unrank_lah,
-    orderedLah: unrank_ordered_lah,
-    intPartition: unrank_int_partitions,
-  };
+    const handleRank = () => {
+        console.log(selectedAlgo);
+        calc_worker.postMessage({
+            type: "rank",
+            algo: selectedAlgo,
+            n,
+            k,
+        });
+    };
 
-  const handleRank = () => {
-    const fn = rankFuncs[selectedAlgo];
-    const res = fn(n, k);
-    setResult(res);
-  };
-
-  const handleUnrank = () => {
-    const fn = unrankFuncs[selectedAlgo];
-    const res = fn(n, k, r);
-    setResult(res);
+    const handleUnrank = () => {
+        console.log(selectedAlgo);
+        calc_worker.postMessage({
+          type: "unrank",
+          algo: selectedAlgo,
+          n,
+          k,
+          r,
+      });
   };
 
   return (
@@ -65,7 +56,7 @@ export default function App() {
           {/* Algorithm selection */}
           <div style={{ marginBottom: "1rem" }}>
               <p>Select algorithm:</p>
-              {(["Stirling","Ordered Stirling","Lah","Ordered Lah","Int Partition"] as Algorithm[]).map(algo => (
+              {Array.from(algoMap.keys()).map(algo => (
                   <label key={algo} style={{ display: "block" }}>
                       <input
                           type="radio"
