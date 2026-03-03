@@ -17,7 +17,7 @@ function divmod(a, b) {
     return [Math.floor(a / b), a % b];
 }
 
-const stirling_numbers_cache = new LRUCache<string, bigint>({max: 1000,});
+const stirling_numbers_cache = new LRUCache<string, bigint>({max: 5000});
 export function stirling_numbers(n: bigint, k: bigint): bigint {
     // There is exactly 1 way to partition 0 elements into 0 groups.
     if (n == 0 && k == 0) return 1;
@@ -34,7 +34,7 @@ export function stirling_numbers(n: bigint, k: bigint): bigint {
     return res;
 }
 
-const lah_numbers_cache = new LRUCache<string, bigint>({max: 1000,});
+const lah_numbers_cache = new LRUCache<string, bigint>({max: 5000});
 export function lah_numbers(n: bigint, k: bigint): bigint {
     if (n == 0 && k == 0) return 1;
     if (n == 0 || k == 0) return 0;
@@ -148,7 +148,7 @@ export function factorial(n) {
     }
     return result;
 }
-const ordered_stirling_cache = new LRUCache<string, number>({max: 1000});
+const ordered_stirling_cache = new LRUCache<string, number>({max: 5000});
 export function ordered_stirling_numbers(n, k): bigint {
     const key = serialize_nk(n, k);
 
@@ -174,7 +174,7 @@ export function ordered_stirling_numbers(n, k): bigint {
     return result;
 }
 
-const int_partitions_cache = new LRUCache({max: 1000});
+const int_partitions_cache = new LRUCache({max: 5000});
 export function int_partitions(n, k): bigint {
     // Base cases
     if (n < 1) return 0;
@@ -206,7 +206,7 @@ export function unrank_int_partitions(n, k, r) {
     }
 }
 
-const ordered_lah_cache = new LRUCache({max: 1000});
+const ordered_lah_cache = new LRUCache({max: 5000});
 export function ordered_lah_numbers(n, k): bigint {
     // Base cases
     if (k === 1 || k === n) {
