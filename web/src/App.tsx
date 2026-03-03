@@ -22,7 +22,7 @@ export default function App() {
     };
 
     const handleRank = () => {
-        console.log(selectedAlgo);
+        setResult("Calculating...");
         calc_worker.postMessage({
             type: "rank",
             algo: selectedAlgo,
@@ -32,14 +32,14 @@ export default function App() {
     };
 
     const handleUnrank = () => {
-        console.log(selectedAlgo);
+        setResult("Calculating...");
         calc_worker.postMessage({
-          type: "unrank",
-          algo: selectedAlgo,
-          n,
-          k,
-          r,
-      });
+            type: "unrank",
+            algo: selectedAlgo,
+            n,
+            k,
+            r,
+        });
   };
 
   return (
