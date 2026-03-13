@@ -46,7 +46,7 @@ export function lah_numbers(n: bigint, k: bigint): bigint {
     if (cached !== undefined) return cached;
 
     const res = lah_numbers(n-1, k-1) + (n+k-1)*lah_numbers(n-1, k);
-    stirling_numbers_cache.set(key, res);
+    lah_numbers_cache.set(key, res);
     return res;
 }
 
@@ -224,4 +224,47 @@ export function ordered_lah_numbers(n, k): bigint {
     return result;
 }
 
-export function unrank_ordered_lah() {}
+export function unrank_ordered_lah(n, k, r) {
+    if (n === 0 && k === 0)
+        return [];
+
+    if (n === 0 || k === 0)
+        return [];
+
+    // one block: all permutations inside that block
+    if (k === 1) {
+        return [unrank_perm(n, r)];
+    }
+
+    // each element alone, order of blocks matters
+    if (k === n) {
+        let perm = unrank_perm(n, r);
+        return perm.map(x => [x]);
+    }
+
+    // CASE A: create new block [n] in one of k positions
+    let cntA = k * ordered_lah_numbers(n - 1, k - 1);
+
+    if (r < cntA) {
+        let [pos, newR] = divmod(r, ordered_lah_numbers(n - 1, k - 1));
+        let res = unrank_ordered_lah(n - 1, k - 1, newR);
+        res.splice(pos, 0, [n]);
+        return res;
+    }
+
+    // CASE B: insert n into one of the existing ordered blocks
+    r = r - cntA;
+
+    let [pos, newR] = divmod(r, ordered_lah_numbers(n - 1, k));
+    let res = unrank_ordered_lah(n - 1, k, newR);
+
+    for (const block of res) {
+        if (pos < block.length + 1) {
+            block.splice(pos, 0, n);
+            return res;
+        }
+        pos -= block.length + 1;
+    }
+
+    return res;
+}
