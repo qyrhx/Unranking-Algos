@@ -1,2 +1,8 @@
 node_modules
 __pycache__
+_minted*/
+*.aux
+*.log
+*.out
+*.toc
+*.bak
