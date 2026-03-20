@@ -21,59 +21,63 @@ function randomBigInt(max: bigint): bigint {
 }
 
 self.onmessage = (e) => {
-  const { type, algo, n, k, r } = e.data;
+  try {
+    const { type, algo, n, k, r } = e.data;
 
-  const entry = algoMap.get(algo);
+    const entry = algoMap.get(algo);
 
-  if (!entry) {
-    self.postMessage({ error: "Invalid algorithm" });
-    return;
-  }
-
-  if (type === "count") {
-    const count = entry.countFn(n, k);
-    self.postMessage({ type: "count", result: count.toString() });
-    return;
-  }
-
-  if (type === "unrank") {
-    const result = entry.unrankFn(n, k, r);
-    self.postMessage({ type: "unrank", result });
-    return;
-  }
-
-  if (type === "random") {
-    const count = entry.countFn(BigInt(n), BigInt(k));
-    if (count <= 0n) {
-      self.postMessage({ type: "random", r: null, error: "No structures for these parameters." });
+    if (!entry) {
+      self.postMessage({ error: "Invalid algorithm" });
       return;
     }
-    const randomR = randomBigInt(count);
-    const result = entry.unrankFn(n, k, Number(randomR));
-    self.postMessage({ type: "random", r: Number(randomR), result });
-    return;
-  }
 
-  if (type === "list_all") {
-    const MAX_LIST = 1000;
-    const count = entry.countFn(BigInt(n), BigInt(k));
-    if (count <= 0n) {
-      self.postMessage({ type: "list_all", result: [], total: 0 });
+    if (type === "count") {
+      const count = entry.countFn(n, k);
+      self.postMessage({ type: "count", result: count.toString() });
       return;
     }
-    const limit = count > BigInt(MAX_LIST) ? MAX_LIST : Number(count);
-    const results = [];
-    for (let i = 0; i < limit; i++) {
-      results.push({ r: i, structure: entry.unrankFn(n, k, i) });
-    }
-    self.postMessage({
-      type: "list_all",
-      result: results,
-      total: count.toString(),
-      truncated: count > BigInt(MAX_LIST),
-    });
-    return;
-  }
 
-  self.postMessage({ error: "Unknown message type" });
+    if (type === "unrank") {
+      const result = entry.unrankFn(n, k, r);
+      self.postMessage({ type: "unrank", result });
+      return;
+    }
+
+    if (type === "random") {
+      const count = entry.countFn(n, k);
+      if (count <= 0n) {
+        self.postMessage({ type: "random", r: null, error: "No structures for these parameters." });
+        return;
+      }
+      const randomR = randomBigInt(count);
+      const result = entry.unrankFn(n, k, Number(randomR));
+      self.postMessage({ type: "random", r: Number(randomR), result });
+      return;
+    }
+
+    if (type === "list_all") {
+      const MAX_LIST = 1000;
+      const count = entry.countFn(n, k);
+      if (count <= 0n) {
+        self.postMessage({ type: "list_all", result: [], total: 0 });
+        return;
+      }
+      const limit = count > BigInt(MAX_LIST) ? MAX_LIST : Number(count);
+      const results = [];
+      for (let i = 0; i < limit; i++) {
+        results.push({ r: i, structure: entry.unrankFn(n, k, i) });
+      }
+      self.postMessage({
+        type: "list_all",
+        result: results,
+        total: count.toString(),
+        truncated: count > BigInt(MAX_LIST),
+      });
+      return;
+    }
+
+    self.postMessage({ error: "Unknown message type" });
+  } catch (err: any) {
+    self.postMessage({ error: err.message || String(err) });
+  }
 };

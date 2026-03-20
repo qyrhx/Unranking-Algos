@@ -2,28 +2,27 @@
 
 \usepackage{graphicx}
 
-% ── Encoding & language
+% Encoding & language
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 
-% ── Typography ────────────────────────────────────────────────────────────────
+% Typography
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{setspace}
 \onehalfspacing
 
-% ── Page geometry ─────────────────────────────────────────────────────────────
+% Page geometry
 \usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
 
-% ── Maths ─────────────────────────────────────────────────────────────────────
+% Maths
 \usepackage{amsmath, amssymb}
 
-% ── Hyperlinks ────────────────────────────────────────────────────────────────
+% Hyperlinks
 \usepackage[hidelinks]{hyperref}
 
-% ── Syntax highlighting (minted) ──────────────────────────────────────────────
-% pip install Pygments  then compile with:  pdflatex --shell-escape report.tex
+% Syntax highlighting (minted)
 \usepackage{minted}
 \setminted{
   fontsize=\small,
@@ -36,7 +35,7 @@
   style=emacs,
 }
 
-% ── Headers / footers ─────────────────────────────────────────────────────────
+% Headers / footers
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
@@ -44,10 +43,9 @@
 \fancyhead[R]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% =============================================================================
 \begin{document}
 
-% ── Title page ────────────────────────────────────────────────────────────────
+% Title page
 \begin{titlepage}
   \centering
   \vspace*{3cm}
@@ -61,11 +59,10 @@
   {\normalsize Sorbonne universit\'e\par}
 \end{titlepage}
 
-% ── Table of contents ─────────────────────────────────────────────────────────
+% Table of contents
 \tableofcontents
 \clearpage
 
-% =============================================================================
 \chapter{Introduction}
 
 Dans les ann\'ees 1960, le math\'ematicien Gian-Carlo Rota a identifi\'e 12
@@ -80,7 +77,6 @@ SymPy, r\'ef\'erence en calcul symbolique. En parall\`ele, une application web
 sera d\'evelopp\'ee afin de rendre ces algorithmes accessibles et visualisables
 en ligne.
 
-% =============================================================================
 \chapter{T\^aches \`a r\'ealiser}
 
 \section{Algorithmes d'unranking}
@@ -104,7 +100,6 @@ biblioth\`eque open-source SymPy, afin d'y \^etre int\'egr\'es et mis \`a
 disposition de la communaut\'e. Cette \'etape implique de respecter les conventions
 de code, de documentation et de tests propres au projet.
 
-% =============================================================================
 \chapter{Les algorithmes (ordre combinatoire)}
 
 \section{Partitions de Stirling}
@@ -136,44 +131,31 @@ $k \cdot \left\{n-1 \atop k\right\}$ possibilit\'es.
 
 \subsection{Impl\'ementation}
 
-L'algorithme d'unranking suit directement cette d\'ecomposition. \'Etant donn\'e
-un rang $r$, on d\'etermine si $n$ forme un bloc singleton (cas~A) ou s'il est
-ins\'er\'e dans un bloc existant (cas~B), en comparant $r$ au nombre de partitions
-du cas~A. Dans le second cas, une division euclidienne permet d'identifier le bloc
-cible et le rang r\'esiduel pour l'appel r\'ecursif.
-
-Les nombres de Stirling pouvant devenir tr\`es grands, ils sont repr\'esent\'es en
-\texttt{bigint}. Un cache LRU est utilis\'e pour \'eviter de recalculer les
-m\^emes valeurs lors des appels r\'ecursifs.
+Les nombres de Stirling croissent tr\`es rapidement, ce qui n\'ecessite
+l'utilisation de grands entiers. TypeScript offre un support natif pour cela
+via le type \texttt{bigint}. Un cache LRU permet de m\'emoïser les appels
+r\'ecursifs et d'\'eviter les recalculs. Ces d\'etails ont \'et\'e omis des
+exemples de code ci-dessous par souci de clart\'e.
 
 \begin{minted}{typescript}
-const stirling_numbers_cache = new LRUCache<string, bigint>({max: 5000});
-function stirling_numbers(n: bigint, k: bigint): bigint {
-  // There is exactly 1 way to partition 0 elements into 0 groups.
-  if (n == 0 && k == 0) return 1;
-  // ex: Partition 0 elements into 3 groups -> impossible
-  if (n == 0 || k == 0) return 0;
-  const s = serialize_nk(n, k);
-  const cached = stirling_numbers_cache.get(s);
-  if (cached !== undefined) return cached;
-  const res = stirling_numbers(n-1, k-1) + k*stirling_numbers(n-1, k);
-  stirling_numbers_cache.set(s, res);
+function stirling_numbers(n: number, k: number): bigint {
+  if (n === 0 && k === 0) return 1n;
+  if (n === 0 || k === 0) return 0n;
+  const res = stirling_numbers(n - 1, k - 1) + BigInt(k) * stirling_numbers(n - 1, k);
   return res;
 }
-function unrank_stirling(n, k, r): number[][] {
-  if (n == 0 || k == 0)
-    return [];
-  const cntA = stirling_numbers(n-1, k-1);
-  if (r < cntA) {
-    let res = unrank_stirling(n-1, k-1, r);
+function unrank_stirling(n: number, k: number, r: number): number[][] {
+  if (n === 0 || k === 0) return [];
+  const cntA = stirling_numbers(n - 1, k - 1);
+  if (BigInt(r) < cntA) {
+    const res = unrank_stirling(n - 1, k - 1, r);
     res.push([n]);
-    return res
+    return res;
   }
-  const r2 = r - cntA;
-  const [pos, r3] = divmod(r2, stirling_numbers(n-1, k));
-  let us = unrank_stirling(n-1, k, r3);
-  us[pos].push(n);
-  return us;
+  const [pos, r2] = divmod(BigInt(r) - cntA, stirling_numbers(n - 1, k));
+  const res = unrank_stirling(n - 1, k, Number(r2));
+  res[Number(pos)].push(n);
+  return res;
 }
 \end{minted}
 
@@ -208,49 +190,42 @@ toute permutation de ces blocs donne une partition diff\'erente, soit $k!$ parti
 
 \subsection{Impl\'ementation}
 
-L'algorithme d'unranking suit la m\^eme logique que pour les partitions de Stirling
-classiques, \`a ceci pr\`es que l'ordre des blocs est significatif. \'Etant donn\'e
-un rang $r$, on d\'etermine d'abord si $n$ forme un nouveau bloc singleton (cas~A),
-en comparant $r$ \`a $k \cdot O^{n-1}_{k-1}$. Dans ce cas, une division euclidienne
-identifie la position du nouveau bloc. Sinon (cas~B), $n$ est ins\'er\'e dans un bloc
-existant, et une seconde division euclidienne d\'etermine lequel.
+L'algorithme suit la m\^eme logique que pour les partitions de Stirling
+classiques, \`a ceci pr\`es que l'ordre des blocs est significatif.
 
 \begin{minted}{typescript}
-const ordered_stirling_cache = new LRUCache<string, number>({max: 5000});
-function ordered_stirling_numbers(n, k): bigint {
-  const key = serialize_nk(n, k);
-  const cached = ordered_stirling_cache.get(key);
-  if (cached !== undefined) return cached;
-  if (k === 1 || k === n) {
-    const result = factorial(k);
-    ordered_stirling_cache.set(key, result);
-    return result;
-  }
-  const result = k * (ordered_stirling_numbers(n - 1, k - 1) +
-    ordered_stirling_numbers(n - 1, k));
-  ordered_stirling_cache.set(key, result);
+function ordered_stirling_numbers(n: number, k: number): bigint {
+  if (k === 1 || k === n) return factorial(k);
+  const result = BigInt(k) * (ordered_stirling_numbers(n - 1, k - 1) + ordered_stirling_numbers(n - 1, k));
   return result;
 }
-function unrank_ordered_stirling(n, k, r) {
-  if (k === 1)
-    return [Array.from({ length: n }, (_, i) => i + 1)];
-  if (k === n) {
-    let perm = unrank_perm(n, r);
-    return perm.map(x => [x]);
+function unrank_perm(n: number, r: number): number[] {
+  const elems = Array.from({ length: n }, (_, i) => i + 1);
+  const perm: number[] = [];
+  let r2 = BigInt(r);
+  for (let m = n; m > 0; m--) {
+    const f = factorial(m - 1);
+    const [idx, newR] = divmod(r2, f);
+    r2 = newR;
+    perm.push(elems.splice(Number(idx), 1)[0]);
   }
-  // Case A: n is put in a singleton, which is inserted in position `pos`
-  let cntA = k * ordered_stirling_numbers(n - 1, k - 1);
+  return perm;
+}
+function unrank_ordered_stirling(n: number, k: number, r: number): number[][] {
+  if (k === 1) return [Array.from({ length: n }, (_, i) => i + 1)];
+  if (k === n) return unrank_perm(n, r).map(x => [x]);
+  // Case A: n is a singleton block inserted at one of k positions
+  const cntA = BigInt(k) * ordered_stirling_numbers(n - 1, k - 1);
   if (r < cntA) {
-    let [pos, newR] = divmod(r, ordered_stirling_numbers(n - 1, k - 1));
-    let res = unrank_ordered_stirling(n - 1, k - 1, newR);
-    res.splice(pos, 0, [n]);
+    const [pos, newR] = divmod(BigInt(r), ordered_stirling_numbers(n - 1, k - 1));
+    const res = unrank_ordered_stirling(n - 1, k - 1, newR);
+    res.splice(Number(pos), 0, [n]);
     return res;
   }
-  // Case B: n is put in an existing block
-  r = r - cntA;
-  let [pos, newR] = divmod(r, ordered_stirling_numbers(n - 1, k));
-  let res = unrank_ordered_stirling(n - 1, k, newR);
-  res[pos].push(n);
+  // Case B: n joins one of the k existing blocks
+  const [pos, newR] = divmod(BigInt(r) - cntA, ordered_stirling_numbers(n - 1, k));
+  const res = unrank_ordered_stirling(n - 1, k, newR);
+  res[Number(pos)].push(n);
   return res;
 }
 \end{minted}
@@ -294,52 +269,102 @@ et il n'existe qu'une seule telle partition.
 
 \subsection{Impl\'ementation}
 
-L'algorithme d'unranking suit cette d\'ecomposition. \'Etant donn\'e un rang $r$,
-on compare $r$ au nombre de partitions du cas singleton (cas~A). Si $r$ est inf\'erieur,
-$n$ forme un nouveau bloc et on r\'ecure sur une $(k-1)$-partition de $\{1,\ldots,n-1\}$.
-Sinon (cas~B), une division euclidienne identifie le bloc cible, puis on parcourt les
-blocs pour localiser la position d'insertion exacte de $n$.
-
 \begin{minted}{typescript}
-const lah_numbers_cache = new LRUCache<string, bigint>({max: 5000});
-
-function lah_numbers(n: bigint, k: bigint): bigint {
-  if (n == 0 && k == 0) return 1;
-  if (n == 0 || k == 0) return 0;
-  if (n == k) return 1;
-
-  const key = serialize_nk(n, k);
-
-  const cached = lah_numbers_cache.get(key);
-  if (cached !== undefined) return cached;
-
-  const res = lah_numbers(n-1, k-1) + (n+k-1)*lah_numbers(n-1, k);
-  lah_numbers_cache.set(key, res);
+function lah_numbers(n: number, k: number): bigint {
+  if (n === 0 && k === 0) return 1n;
+  if (n === 0 || k === 0) return 0n;
+  if (n === k) return 1n;
+  const res = lah_numbers(n - 1, k - 1) + BigInt(n + k - 1) * lah_numbers(n - 1, k);
   return res;
 }
-
-function unrank_lah(n, k, r) {
-  if (n == 0 && k == 0) return [];
-  if (n == 0 || k == 0) return [];
-  if (n == k)
-    return Array.from({ length: n }, (_, x) => [x + 1]);
-
-  // Case A: create a singleton with n
-  let fst_case_cnt = lah_numbers(n-1, k-1);
-  if (r < fst_case_cnt)
-    return [...unrank_lah(n-1, k-1, r), [n]];
-
-  // Case B: n is inserted in an existing block
-  const r2 = r - fst_case_cnt;
-  let [pos, r3] = divmod(r2, lah_numbers(n-1, k));
-  let res = unrank_lah(n-1, k, r3);
-
-  for (const boite of res) {
-    if (pos < boite.length + 1) {
-      boite.splice(pos, 0, n);
+function unrank_lah(n: number, k: number, r: number): number[][] {
+  if (n === 0) return [];
+  if (n === k) return Array.from({ length: n }, (_, x) => [x + 1]);
+  const cntA = lah_numbers(n - 1, k - 1);
+  // Case A: n is a new singleton block
+  if (r < cntA) return [...unrank_lah(n - 1, k - 1, r), [n]];
+  // Case B: insert n into one of the existing blocks
+  const [blockIdx, r2] = divmod(BigInt(r) - cntA, lah_numbers(n - 1, k));
+  const res = unrank_lah(n - 1, k, r2);
+  let pos = Number(blockIdx);
+  for (const block of res) {
+    if (pos < block.length + 1) {
+      block.splice(pos, 0, n);
       break;
     }
-    pos -= boite.length + 1;
+    pos -= block.length + 1;
+  }
+  return res;
+}
+\end{minted}
+
+\section{Partitions de Lah Ordonn\'ees}
+
+\subsection{Formule de comptage}
+
+Le nombre de partitions de Lah ordonn\'ees de $\{1, \ldots, n\}$ en $k$ blocs est
+not\'e $\left\lceil n \atop k \right\rceil$ et satisfait la r\'ecurrence suivante :
+
+\[
+  \left\lceil n \atop k \right\rceil =
+  \begin{cases}
+    n! & \text{si } k = 1 \text{ ou } k = n \\[6pt]
+    k \cdot \left\lceil n-1 \atop k-1 \right\rceil + (n - 1 + k) \cdot
+    \left\lceil n-1 \atop k \right\rceil & \text{sinon}
+  \end{cases}
+\]
+
+\subsection{Interpr\'etation combinatoire}
+
+Une partition de Lah ordonn\'ee est la structure la plus riche parmi les quatre
+partitions \'etudi\'ees : l'ordre des \'el\'ements au sein de chaque bloc compte,
+et l'ordre des blocs entre eux compte \'egalement. Elle combine ainsi les
+caract\'eristiques des partitions de Stirling ordonn\'ees (blocs ordonn\'es) et
+des partitions de Lah (s\'equences internes).
+
+La r\'ecurrence se comprend comme suit : pour construire une $k$-partition de
+$\{1, \ldots, n\}$, soit on ajoute $n$ comme nouveau bloc singleton dans l'une
+des $k$ positions possibles parmi les blocs d'une $(k-1)$-partition de
+$\{1, \ldots, n-1\}$, soit on ins\`ere $n$ dans l'un des blocs existants d'une
+$k$-partition de $\{1, \ldots, n-1\}$, en $n - 1 + k$ positions possibles.
+
+Aux cas de base, si $k = 1$ tous les \'el\'ements forment une seule s\'equence,
+soit $n!$ arrangements. Si $k = n$ chaque \'el\'ement est seul dans son bloc et
+toute permutation des blocs donne une partition diff\'erente, soit \'egalement $n!$
+partitions.
+
+\subsection{Impl\'ementation}
+
+\begin{minted}{typescript}
+function ordered_lah_numbers(n: number, k: number): bigint {
+  if (k === 1 || k === n) return factorial(n);
+  const result =
+    BigInt(k) * ordered_lah_numbers(n - 1, k - 1) +
+    BigInt(n - 1 + k) * ordered_lah_numbers(n - 1, k);
+  return result;
+}
+function unrank_ordered_lah(n: number, k: number, r: number): number[][] {
+  if (n === 0) return [];
+  if (k === 1) return [unrank_perm(n, r)];
+  if (k === n) return unrank_perm(n, r).map(x => [x]);
+  // Case A: n is a new singleton block inserted at one of k positions
+  const cntA = BigInt(k) * ordered_lah_numbers(n - 1, k - 1);
+  if (r < cntA) {
+    const [pos, newR] = divmod(BigInt(r), ordered_lah_numbers(n - 1, k - 1));
+    const res = unrank_ordered_lah(n - 1, k - 1, newR);
+    res.splice(Number(pos), 0, [n]);
+    return res;
+  }
+  // Case B: insert n into one of the existing ordered blocks
+  const [blockIdx, newR] = divmod(BigInt(r) - cntA, ordered_lah_numbers(n - 1, k));
+  const res = unrank_ordered_lah(n - 1, k, newR);
+  let pos = Number(blockIdx);
+  for (const block of res) {
+    if (pos < block.length + 1) {
+      block.splice(pos, 0, n);
+      return res;
+    }
+    pos -= block.length + 1;
   }
   return res;
 }
@@ -379,27 +404,22 @@ la seule partition possible est $\{1, 1, \ldots, 1\}$.
 
 \subsection{Impl\'ementation}
 
-L'algorithme d'unranking suit directement cette d\'ecomposition. \'Etant donn\'e
-un rang $r$, on compare $r$ au nombre de partitions dont la plus petite part vaut
-$1$ (cas~A). Si $r$ est inf\'erieur, on place un $1$ en tête et on r\'ecure sur
-une $(k-1)$-partition de $n-1$. Sinon (cas~B), on r\'ecure sur une $k$-partition
-de $n - k$ et on ajoute $1$ \`a chaque part du r\'esultat.
-
 \begin{minted}{typescript}
-export function unrank_int_partitions(n, k, r) {
+function int_partitions(n: number, k: number): bigint {
+  if (n < 1) return 0n;
+  if (k === 1 || n === k) return 1n;
+  const result = int_partitions(n - 1, k - 1) + int_partitions(n - k, k);
+  return result;
+}
+function unrank_int_partitions(n: number, k: number, r: number): number[] {
   if (n < 1) return [];
   if (k === 1) return [n];
   if (n === k) return Array(n).fill(1);
-
   // Case A: smallest part is 1
-  const partitionsCount = int_partitions(n - 1, k - 1);
-  if (r < partitionsCount)
-    return [1, ...unrank_int_partitions(n - 1, k - 1, r)];
-
-  // Case B: all parts are > 1, subtract 1 from each
-  const r2 = r - partitionsCount;
-  const res = unrank_int_partitions(n - k, k, r2);
-  return res.map(i => i + 1);
+  const cntA = int_partitions(n - 1, k - 1);
+  if (r < cntA) return [1, ...unrank_int_partitions(n - 1, k - 1, r)];
+  // Case B: all parts > 1, subtract 1 from each
+  return unrank_int_partitions(n - k, k, BigInt(r) - cntA).map(i => i + 1);
 }
 \end{minted}
 
@@ -422,7 +442,9 @@ structurer l'interface de mani\`ere claire et r\'eactive. Vite offre un
 environnement de d\'eveloppement rapide et une cha\^ine de compilation moderne.
 TypeScript apporte la s\^uret\'e des types, particuli\`erement utile pour
 manipuler des \texttt{bigint} et des structures combinatoires potentiellement
-complexes.
+complexes. La biblioth\`eque \texttt{lru-cache} est \'egalement utilis\'ee pour la
+m\'emo\"isation des fonctions de comptage, dont les valeurs sont r\'eutilis\'ees
+intensivement lors des appels r\'ecursifs.
 
 \subsection{Ex\'ecution dans un Web Worker}
 
