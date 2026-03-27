@@ -284,7 +284,6 @@ export function unrank_ordered_lah_lex(n: number, k: number, r: bigint): number[
   return extract_part(part, Array.from({ length: n }, (_, i) => i + 1));
 }
 
-
 export function unrank_int_partitions_lex(n: number, k: number, r: bigint): number[] {
   const acc: number[] = [];
   let lem = 2;

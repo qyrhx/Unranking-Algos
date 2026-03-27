@@ -11,7 +11,7 @@ function serialize_nk(n: number, k: number): string {
 const stirling_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function stirling_numbers(n: number, k: number): bigint {
   if (n === 0 && k === 0) return 1n;
-  if (n === 0 || k === 0) return 0n;
+  if (n === 0 || k === 0 || k > n) return 0n;
 
   const key = serialize_nk(n, k);
   const cached = stirling_cache.get(key);
@@ -25,6 +25,7 @@ export function stirling_numbers(n: number, k: number): bigint {
 // Ordered Stirling numbers
 const ordered_stirling_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function ordered_stirling_numbers(n: number, k: number): bigint {
+  if (n < 0 || k < 0 || k > n) return 0n;
   if (k === 1 || k === n) return factorial(k);
   const key = serialize_nk(n, k);
   const cached = ordered_stirling_cache.get(key);
@@ -38,7 +39,7 @@ export function ordered_stirling_numbers(n: number, k: number): bigint {
 const lah_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function lah_numbers(n: number, k: number): bigint {
   if (n === 0 && k === 0) return 1n;
-  if (n === 0 || k === 0) return 0n;
+  if (n === 0 || k === 0 || k > n) return 0n;
   if (n === k) return 1n;
   const key = serialize_nk(n, k);
   const cached = lah_cache.get(key);
@@ -51,13 +52,14 @@ export function lah_numbers(n: number, k: number): bigint {
 // Ordered Lah numbers
 const ordered_lah_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function ordered_lah_numbers(n: number, k: number): bigint {
-  if (k === 1 || k === n) return factorial(n);
+  if (n < 0 || k < 0) return 0n;
+  if (k === 1 || k === n || k > n) return factorial(n);
   const key = serialize_nk(n, k);
   const cached = ordered_lah_cache.get(key);
   if (cached !== undefined) return cached;
   const result =
     BigInt(k) * ordered_lah_numbers(n - 1, k - 1) +
-    BigInt(n - 1 + k) * ordered_lah_numbers(n - 1, k);
+      BigInt(n - 1 + k) * ordered_lah_numbers(n - 1, k);
   ordered_lah_cache.set(key, result);
   return result;
 }

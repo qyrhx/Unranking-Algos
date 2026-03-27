@@ -101,7 +101,7 @@ export default function App() {
       <div style={{ marginBottom: "1rem" }}>
         <label>n: <input type="number" value={n} onChange={e => setN(Number(e.target.value))} /></label><br />
         <label>k: <input type="number" value={k} onChange={e => setK(Number(e.target.value))} /></label><br />
-        <label>r: <input type="number" value={r} onChange={e => setR(Number(e.target.value))} /></label>
+        <label>r: <input type="number" value={r} onChange={e => setR(Bigint(e.target.value))} /></label>
       </div>
 
       {/* Algorithm selection */}

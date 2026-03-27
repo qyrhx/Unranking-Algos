@@ -50,8 +50,8 @@ self.onmessage = (e) => {
         return;
       }
       const randomR = randomBigInt(count);
-      const result = entry.unrankFn(n, k, BigInt(randomR));
-      self.postMessage({ type: "random", r: BigInt(randomR), result });
+      const result = entry.unrankFn(n, k, randomR);
+      self.postMessage({ type: "random", r: randomR.toString(), result });
       return;
     }
 
@@ -65,7 +65,7 @@ self.onmessage = (e) => {
       const limit = count > BigInt(MAX_LIST) ? MAX_LIST : Number(count);
       const results = [];
       for (let i = 0; i < limit; i++) {
-        results.push({ r: i, structure: entry.unrankFn(n, k, i) });
+        results.push({ r: i, structure: entry.unrankFn(n, k, BigInt(i)) });
       }
       self.postMessage({
         type: "list_all",
