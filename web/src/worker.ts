@@ -1,4 +1,4 @@
-import { algoMap } from "./algorithms";
+import { AlgoMap } from "./algomap.ts";
 
 function randomBigInt(max: bigint): bigint {
   if (max <= 0n) return 0n;
@@ -24,7 +24,7 @@ self.onmessage = (e) => {
   try {
     const { type, algo, n, k, r } = e.data;
 
-    const entry = algoMap.get(algo);
+    const entry = AlgoMap.get(algo);
 
     if (!entry) {
       self.postMessage({ error: "Invalid algorithm" });
@@ -38,7 +38,7 @@ self.onmessage = (e) => {
     }
 
     if (type === "unrank") {
-      const result = entry.unrankFn(n, k, r);
+      const result = entry.unrankFn(n, k, BigInt(r));
       self.postMessage({ type: "unrank", result });
       return;
     }
@@ -50,8 +50,8 @@ self.onmessage = (e) => {
         return;
       }
       const randomR = randomBigInt(count);
-      const result = entry.unrankFn(n, k, Number(randomR));
-      self.postMessage({ type: "random", r: Number(randomR), result });
+      const result = entry.unrankFn(n, k, BigInt(randomR));
+      self.postMessage({ type: "random", r: BigInt(randomR), result });
       return;
     }
 

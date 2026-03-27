@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { algoMap } from "./algorithms";
+import { AlgoMap } from "./algomap.ts";
 
 export default function App() {
   // Inputs
@@ -7,7 +7,7 @@ export default function App() {
   const [k, setK] = useState<number>(0);
   const [r, setR] = useState<number>(0);
 
-  const [selectedAlgo, setSelectedAlgo] = useState(Array.from(algoMap.keys())[0]);
+  const [selectedAlgo, setSelectedAlgo] = useState(Array.from(AlgoMap.keys())[0]);
 
   const [result, setResult] = useState<any>("");
   const [listResult, setListResult] = useState<{ r: number; structure: any[] }[] | null>(null);
@@ -87,6 +87,9 @@ export default function App() {
     if (Array.isArray(s) && Array.isArray(s[0])) {
       return s.map((row: any[]) => `[${row.join(", ")}]`).join("  ");
     }
+    if (Array.isArray(s)) {
+      return `[${s.join(", ")}]`;
+    }
     return JSON.stringify(s);
   };
 
@@ -104,7 +107,7 @@ export default function App() {
       {/* Algorithm selection */}
       <div style={{ marginBottom: "1rem" }}>
         <p>Select algorithm:</p>
-        {Array.from(algoMap.keys()).map(algo => (
+        {Array.from(AlgoMap.keys()).map(algo => (
           <label key={algo} style={{ display: "block" }}>
             <input
               type="radio"
@@ -135,9 +138,7 @@ export default function App() {
             overflowX: "auto", whiteSpace: "pre", overflowY: "auto",
             background: "#f0f0f0", minHeight: "1.5em", fontFamily: "monospace",
           }}>
-            {Array.isArray(result) && Array.isArray(result[0])
-              ? result.map((row: any[], i: number) => <div key={i}>[{row.join(", ")}]</div>)
-              : result}
+            {typeof result === 'string' ? result : formatStructure(result)}
           </div>
         </div>
       )}
