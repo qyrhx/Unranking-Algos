@@ -31,6 +31,7 @@ export default function App() {
       if (data.type === "count") {
         setListResult(null);
         setResult(`Total structures: ${data.result}`);
+        setResult(<>Total structures: <span style={{ color: "#b45309" }}>{data.result}</span></>);
         return;
       }
 
@@ -84,11 +85,20 @@ export default function App() {
   const handleListAll = () => send({ type: "list_all", algo: selectedAlgo, n, k });
 
   const formatStructure = (s: any) => {
+    const bold = (str: string) =>
+      str.split(/(\[|\]|,|\d+)/).map((c, i) =>
+        c === '[' || c === ']' || c === ',' ? <b key={i}>{c}</b> :
+          /^\d+$/.test(c) ? <span key={i} style={{ color: "#b45309" }}>{c}</span> :
+            c
+      );
+
     if (Array.isArray(s) && Array.isArray(s[0])) {
-      return s.map((row: any[]) => `[${row.join(", ")}]`).join("  ");
+      return s.map((row: any[], i: number) => (
+        <span key={i}>{i > 0 ? "  " : ""}{bold(`[${row.join(", ")}]`)}</span>
+      ));
     }
     if (Array.isArray(s)) {
-      return `[${s.join(", ")}]`;
+      return bold(`[${s.join(", ")}]`);
     }
     return JSON.stringify(s);
   };
@@ -136,9 +146,9 @@ export default function App() {
           <div style={{
             marginTop: "0.5rem", padding: "0.5rem", maxHeight: "300px",
             overflowX: "auto", whiteSpace: "pre", overflowY: "auto",
-            background: "#f0f0f0", minHeight: "1.5em", fontFamily: "monospace",
+            background: "#f0f0f0", minHeight: "1.5em", fontFamily: "monospace"
           }}>
-            {typeof result === 'string' ? result : formatStructure(result)}
+            {typeof result === 'string' ? result : Array.isArray(result) ? formatStructure(result) : result}
           </div>
         </div>
       )}
@@ -151,11 +161,15 @@ export default function App() {
           </strong>
           <div style={{
             marginTop: "0.5rem", padding: "0.5rem", maxHeight: "500px",
-            overflowY: "auto", background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.85em",
+            overflowY: "auto", background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.9em",
           }}>
             {listResult.map(({ r: rank, structure }) => (
               <div key={rank}>
-                <span style={{ color: "#888", marginRight: "0.5em" }}>r={rank}</span>
+                <span style={{ color: "#888", marginRight: "0.5em",
+                  display: "inline-block", width: "7ch"
+                }}>
+                  r={rank}
+                </span>
                 {formatStructure(structure)}
               </div>
             ))}
