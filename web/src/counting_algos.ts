@@ -11,7 +11,7 @@ function serialize_nk(n: number, k: number): string {
 const stirling_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function stirling_numbers(n: number, k: number): bigint {
   if (n === 0 && k === 0) return 1n;
-  if (n === 0 || k === 0 || k > n) return 0n;
+  if (n <= 0 || k <= 0 || k > n) return 0n;
 
   const key = serialize_nk(n, k);
   const cached = stirling_cache.get(key);
@@ -39,7 +39,7 @@ export function ordered_stirling_numbers(n: number, k: number): bigint {
 const lah_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function lah_numbers(n: number, k: number): bigint {
   if (n === 0 && k === 0) return 1n;
-  if (n === 0 || k === 0 || k > n) return 0n;
+  if (n <= 0 || k <= 0 || k > n) return 0n;
   if (n === k) return 1n;
   const key = serialize_nk(n, k);
   const cached = lah_cache.get(key);

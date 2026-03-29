@@ -1,5 +1,3 @@
-import {safeCount, safeUnrank} from "./utils.ts"
-
 import {stirling_numbers, ordered_stirling_numbers,
   lah_numbers, ordered_lah_numbers, int_partitions}
 from "./counting_algos.ts"
@@ -12,54 +10,47 @@ import {unrank_stirling_lex, unrank_ordered_stirling_lex,
   unrank_lah_lex, unrank_ordered_lah_lex, unrank_int_partitions_lex}
 from "./lexicographic_algos.ts"
 
+export enum MsgType {
+  COUNT,
+  UNRANK,
+  RANDOM,
+  LIST_ALL,
+}
+
+
+export enum Order {
+  COMB,
+  LEX,
+}
+
 export let AlgoMap = new Map();
 
 AlgoMap.set("Stirling", {
-  countFn: safeCount(stirling_numbers),
-  unrankFn: safeUnrank(stirling_numbers, unrank_stirling)
-});
-
-AlgoMap.set("Stirling Lex", {
-  countFn: safeCount(stirling_numbers),
-  unrankFn: safeUnrank(stirling_numbers, unrank_stirling_lex)
+  countFn: stirling_numbers,
+  unrankFnComb: unrank_stirling,
+  unrankFnLex: unrank_stirling_lex
 });
 
 AlgoMap.set("Ordered Stirling", {
-  countFn: safeCount(ordered_stirling_numbers),
-  unrankFn: safeUnrank(ordered_stirling_numbers, unrank_ordered_stirling)
-});
-
-AlgoMap.set("Ordered Stirling Lex", {
-  countFn: safeCount(ordered_stirling_numbers),
-  unrankFn: safeUnrank(ordered_stirling_numbers, unrank_ordered_stirling_lex)
+  countFn: ordered_stirling_numbers,
+  unrankFnComb: unrank_ordered_stirling,
+  unrankFnLex: unrank_ordered_stirling_lex
 });
 
 AlgoMap.set("Lah", {
-  countFn: safeCount(lah_numbers),
-  unrankFn: safeUnrank(lah_numbers, unrank_lah)
-});
-
-AlgoMap.set("Lah Lex", {
-  countFn: safeCount(lah_numbers),
-  unrankFn: safeUnrank(lah_numbers, unrank_lah_lex)
+  countFn: lah_numbers,
+  unrankFnComb: unrank_lah,
+  unrankFnLex: unrank_lah_lex
 });
 
 AlgoMap.set("Ordered Lah", {
-  countFn: safeCount(ordered_lah_numbers),
-  unrankFn: safeUnrank(ordered_lah_numbers, unrank_ordered_lah)
-});
-
-AlgoMap.set("Ordered Lah Lex", {
-  countFn: safeCount(ordered_lah_numbers),
-  unrankFn: safeUnrank(ordered_lah_numbers, unrank_ordered_lah_lex)
+  countFn: ordered_lah_numbers,
+  unrankFnComb: unrank_ordered_lah,
+  unrankFnLex: unrank_ordered_lah_lex
 });
 
 AlgoMap.set("Int Partition", {
-  countFn: safeCount(int_partitions),
-  unrankFn: safeUnrank(int_partitions, unrank_int_partitions)
-});
-
-AlgoMap.set("Int Partition Lex", {
-  countFn: safeCount(int_partitions),
-  unrankFn: safeUnrank(int_partitions, unrank_int_partitions_lex)
+  countFn: int_partitions,
+  unrankFnComb: unrank_int_partitions,
+  unrankFnLex: unrank_int_partitions_lex
 });

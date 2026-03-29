@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { AlgoMap } from "./algomap.ts";
+import { AlgoMap, Order, MsgType } from "./algomap.ts";
 
 export default function App() {
   // Inputs
@@ -8,6 +8,7 @@ export default function App() {
   const [r, setR] = useState<number>(0);
 
   const [selectedAlgo, setSelectedAlgo] = useState(Array.from(AlgoMap.keys())[0]);
+  const [order, setOrder] = useState<Order>(Order.COMB);
 
   const [result, setResult] = useState<any>("");
   const [listResult, setListResult] = useState<{ r: number; structure: any[] }[] | null>(null);
@@ -28,20 +29,19 @@ export default function App() {
         return;
       }
 
-      if (data.type === "count") {
+      if (data.type === MsgType.COUNT) {
         setListResult(null);
-        setResult(`Total structures: ${data.result}`);
         setResult(<>Total structures: <span style={{ color: "#b45309" }}>{data.result}</span></>);
         return;
       }
 
-      if (data.type === "unrank") {
+      if (data.type === MsgType.UNRANK) {
         setListResult(null);
         setResult(data.result);
         return;
       }
 
-      if (data.type === "random") {
+      if (data.type === MsgType.RANDOM) {
         if (data.error) { setResult(data.error); return; }
         setListResult(null);
         setR(data.r);
@@ -49,7 +49,7 @@ export default function App() {
         return;
       }
 
-      if (data.type === "list_all") {
+      if (data.type === MsgType.LIST_ALL) {
         setResult("");
         setListResult(data.result);
         setListTotal(data.total);
@@ -76,13 +76,13 @@ export default function App() {
     setResult("Calculating...");
     setListResult(null);
     setLoading(true);
-    workerRef.current?.postMessage(msg);
+    workerRef.current?.postMessage({ ...msg, order });
   };
 
-  const handleCount   = () => send({ type: "count",    algo: selectedAlgo, n, k });
-  const handleUnrank  = () => send({ type: "unrank",   algo: selectedAlgo, n, k, r });
-  const handleRandom  = () => send({ type: "random",   algo: selectedAlgo, n, k });
-  const handleListAll = () => send({ type: "list_all", algo: selectedAlgo, n, k });
+  const handleCount   = () => send({ type: MsgType.COUNT,    algo: selectedAlgo, n, k });
+  const handleUnrank  = () => send({ type: MsgType.UNRANK,   algo: selectedAlgo, order, n, k, r });
+  const handleRandom  = () => send({ type: MsgType.RANDOM,   algo: selectedAlgo, order, n, k });
+  const handleListAll = () => send({ type: MsgType.LIST_ALL, algo: selectedAlgo, order, n, k });
 
   const formatStructure = (s: any) => {
     const bold = (str: string) =>
@@ -111,7 +111,7 @@ export default function App() {
       <div style={{ marginBottom: "1rem" }}>
         <label>n: <input type="number" value={n} onChange={e => setN(Number(e.target.value))} /></label><br />
         <label>k: <input type="number" value={k} onChange={e => setK(Number(e.target.value))} /></label><br />
-        <label>r: <input type="number" value={r} onChange={e => setR(Bigint(e.target.value))} /></label>
+        <label>r: <input type="number" value={r} onChange={e => setR(Number(e.target.value))} /></label>
       </div>
 
       {/* Algorithm selection */}
@@ -128,6 +128,29 @@ export default function App() {
             {algo}
           </label>
         ))}
+      </div>
+
+      {/* Order selection */}
+      <div style={{ marginBottom: "1rem" }}>
+        <p>Unranking order:</p>
+        <label style={{ marginRight: "1em" }}>
+          <input
+            type="radio"
+            name="order"
+            checked={order === Order.COMB}
+            onChange={() => setOrder(Order.COMB)}
+          />
+          Combinatorial
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="order"
+            checked={order === Order.LEX}
+            onChange={() => setOrder(Order.LEX)}
+          />
+          Lexicographic
+        </label>
       </div>
 
       {/* Buttons */}

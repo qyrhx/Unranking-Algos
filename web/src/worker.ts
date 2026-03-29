@@ -1,4 +1,4 @@
-import { AlgoMap } from "./algomap.ts";
+import { AlgoMap, Order, MsgType } from "./algomap.ts";
 
 function randomBigInt(max: bigint): bigint {
   if (max <= 0n) return 0n;
@@ -22,7 +22,7 @@ function randomBigInt(max: bigint): bigint {
 
 self.onmessage = (e) => {
   try {
-    const { type, algo, n, k, r } = e.data;
+    const { type, algo, n, k, r, order } = e.data;
 
     const entry = AlgoMap.get(algo);
 
@@ -31,44 +31,46 @@ self.onmessage = (e) => {
       return;
     }
 
-    if (type === "count") {
+    const unrankFn = order === Order.LEX ? entry.unrankFnLex : entry.unrankFnComb;
+
+    if (type === MsgType.COUNT) {
       const count = entry.countFn(n, k);
-      self.postMessage({ type: "count", result: count.toString() });
+      self.postMessage({ type: MsgType.COUNT, result: count.toString() });
       return;
     }
 
-    if (type === "unrank") {
-      const result = entry.unrankFn(n, k, BigInt(r));
-      self.postMessage({ type: "unrank", result });
+    if (type === MsgType.UNRANK) {
+      const result = unrankFn(n, k, BigInt(r));
+      self.postMessage({ type: MsgType.UNRANK, result });
       return;
     }
 
-    if (type === "random") {
+    if (type === MsgType.RANDOM) {
       const count = entry.countFn(n, k);
       if (count <= 0n) {
-        self.postMessage({ type: "random", r: null, error: "No structures for these parameters." });
+        self.postMessage({ type: MsgType.RANDOM, r: null, error: "No structures for these parameters." });
         return;
       }
       const randomR = randomBigInt(count);
-      const result = entry.unrankFn(n, k, randomR);
-      self.postMessage({ type: "random", r: randomR.toString(), result });
+      const result = unrankFn(n, k, randomR);
+      self.postMessage({ type: MsgType.RANDOM, r: randomR.toString(), result });
       return;
     }
 
-    if (type === "list_all") {
+    if (type === MsgType.LIST_ALL) {
       const MAX_LIST = 1000;
       const count = entry.countFn(n, k);
       if (count <= 0n) {
-        self.postMessage({ type: "list_all", result: [], total: 0 });
+        self.postMessage({ type: MsgType.LIST_ALL, result: [], total: 0 });
         return;
       }
       const limit = count > BigInt(MAX_LIST) ? MAX_LIST : Number(count);
       const results = [];
       for (let i = 0; i < limit; i++) {
-        results.push({ r: i, structure: entry.unrankFn(n, k, BigInt(i)) });
+        results.push({ r: i, structure: unrankFn(n, k, BigInt(i)) });
       }
       self.postMessage({
-        type: "list_all",
+        type: MsgType.LIST_ALL,
         result: results,
         total: count.toString(),
         truncated: count > BigInt(MAX_LIST),
