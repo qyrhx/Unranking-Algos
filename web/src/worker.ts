@@ -58,7 +58,7 @@ self.onmessage = (e) => {
     }
 
     if (type === MsgType.LIST_ALL) {
-      const MAX_LIST = 1000;
+      const MAX_LIST = 200;
       const count = entry.countFn(n, k);
       if (count <= 0n) {
         self.postMessage({ type: MsgType.LIST_ALL, result: [], total: 0 });
@@ -73,7 +73,7 @@ self.onmessage = (e) => {
         type: MsgType.LIST_ALL,
         result: results,
         total: count.toString(),
-        truncated: count > BigInt(MAX_LIST),
+        countExceedsLimit: count > BigInt(MAX_LIST),
       });
       return;
     }

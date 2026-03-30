@@ -13,7 +13,7 @@ export default function App() {
   const [result, setResult] = useState<any>("");
   const [listResult, setListResult] = useState<{ r: number; structure: any[] }[] | null>(null);
   const [listTotal, setListTotal] = useState<string | null>(null);
-  const [listTruncated, setListTruncated] = useState(false);
+  const [countExceedsLimit, setCountExceedsLimit] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const workerRef = useRef<Worker | null>(null);
@@ -53,7 +53,7 @@ export default function App() {
         setResult("");
         setListResult(data.result);
         setListTotal(data.total);
-        setListTruncated(data.truncated);
+        setCountExceedsLimit(data.countExceedsLimit);
         return;
       }
     };
@@ -80,9 +80,9 @@ export default function App() {
   };
 
   const handleCount   = () => send({ type: MsgType.COUNT,    algo: selectedAlgo, n, k });
-  const handleUnrank  = () => send({ type: MsgType.UNRANK,   algo: selectedAlgo, order, n, k, r });
-  const handleRandom  = () => send({ type: MsgType.RANDOM,   algo: selectedAlgo, order, n, k });
-  const handleListAll = () => send({ type: MsgType.LIST_ALL, algo: selectedAlgo, order, n, k });
+  const handleUnrank  = () => send({ type: MsgType.UNRANK,   algo: selectedAlgo, n, k, r });
+  const handleRandom  = () => send({ type: MsgType.RANDOM,   algo: selectedAlgo, n, k });
+  const handleListAll = () => send({ type: MsgType.LIST_ALL, algo: selectedAlgo, n, k });
 
   const formatStructure = (s: any) => {
     const bold = (str: string) =>
@@ -179,23 +179,23 @@ export default function App() {
       {/* List all result */}
       {listResult && (
         <div style={{ marginTop: "1rem" }}>
-          <strong>
-            All structures ({listTruncated ? `first 1000 of ` : ""}{listTotal} total):
-          </strong>
+          <strong>All structures ({listTotal} total):</strong>
           <div style={{
             marginTop: "0.5rem", padding: "0.5rem", maxHeight: "500px",
             overflowY: "auto", background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.9em",
           }}>
-            {listResult.map(({ r: rank, structure }) => (
-              <div key={rank}>
-                <span style={{ color: "#888", marginRight: "0.5em",
-                  display: "inline-block", width: "7ch"
-                }}>
-                  r={rank}
-                </span>
-                {formatStructure(structure)}
-              </div>
-            ))}
+            {countExceedsLimit
+              ? <span style={{ color: "#dc2626" }}>Count too large to list ({listTotal} structures).</span>
+              : listResult.map(({ r: rank, structure }) => (
+                <div key={rank}>
+                  <span style={{ color: "#888", marginRight: "0.5em",
+                    display: "inline-block", width: "7ch"
+                  }}>
+                    r={rank}
+                  </span>
+                  {formatStructure(structure)}
+                </div>
+              ))}
           </div>
         </div>
       )}
