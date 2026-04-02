@@ -1,6 +1,6 @@
 import { LRUCache } from "lru-cache";
 
-import { divmod, factorial, safeCount, safeUnrank } from "./utils.ts"
+import { factorial } from "./utils.ts"
 
 // Helpers
 function serialize_nk(n: number, k: number): string {
