@@ -52,8 +52,8 @@ export function lah_numbers(n: number, k: number): bigint {
 // Ordered Lah numbers
 const ordered_lah_cache = new LRUCache<string, bigint>({ max: 10000 });
 export function ordered_lah_numbers(n: number, k: number): bigint {
-  if (n < 0 || k < 0) return 0n;
-  if (k === 1 || k === n || k > n) return factorial(n);
+  if (n < 0 || k < 0 || k > n) return 0n;
+  if (k === 1 || k === n) return factorial(n);
   const key = serialize_nk(n, k);
   const cached = ordered_lah_cache.get(key);
   if (cached !== undefined) return cached;

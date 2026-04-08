@@ -2,10 +2,10 @@ import { stirling_numbers, ordered_stirling_numbers,
   lah_numbers, ordered_lah_numbers, int_partitions }
 from "./counting_algos.ts"
 
-import { divmod, factorial } from "./utils"
+import { divmod, factorial } from "./utils.ts"
 
 export function unrank_stirling(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const cntA = stirling_numbers(n - 1, k - 1);
   if (r < cntA) {
     const res = unrank_stirling(n - 1, k - 1, r);
@@ -19,7 +19,7 @@ export function unrank_stirling(n: number, k: number, r: bigint): number[][] {
 }
 
 export function unrank_perm(n: number, r: bigint): number[] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || r < 0n) return [];
   const elems = Array.from({ length: n }, (_, i) => i + 1);
   const perm: number[] = [];
   let r2 = r;
@@ -32,9 +32,9 @@ export function unrank_perm(n: number, r: bigint): number[] {
   return perm;
 }
 export function unrank_ordered_stirling(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   if (k === 1) return [Array.from({ length: n }, (_, i) => i + 1)];
-  if (k === n) return Array.from({ length: n }, (_, i) => [i + 1]); // unrank_perm(n, r).map(x => [x]);
+  if (k === n) return unrank_perm(n, r).map(x => [x]);
   // Case A: n is a singleton block inserted at one of k positions
   const cntA = BigInt(k) * ordered_stirling_numbers(n - 1, k - 1);
   if (r < cntA) {
@@ -51,7 +51,7 @@ export function unrank_ordered_stirling(n: number, k: number, r: bigint): number
 }
 
 export function unrank_lah(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   if (n === k) return Array.from({ length: n }, (_, x) => [x + 1]);
   const cntA = lah_numbers(n - 1, k - 1);
   // Case A: n is a new singleton block
@@ -71,7 +71,7 @@ export function unrank_lah(n: number, k: number, r: bigint): number[][] {
 }
 
 export function unrank_ordered_lah(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   if (k === 1) return [unrank_perm(n, r)];
   if (k === n) return unrank_perm(n, r).map(x => [x]);
   // Case A: n is a new singleton block inserted at one of k positions
@@ -97,7 +97,7 @@ export function unrank_ordered_lah(n: number, k: number, r: bigint): number[][] 
 }
 
 export function unrank_int_partitions(n: number, k: number, r: bigint): number[] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   if (k === 1) return [n];
   if (n === k) return Array(n).fill(1);
   // Case A: smallest part is 1

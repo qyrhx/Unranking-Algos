@@ -64,7 +64,7 @@ function block_dicho(n: number, k: number, r: bigint): [number[], bigint] {
 }
 
 export function unrank_stirling_lex(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const n0 = n;
   const res: number[][] = [];
 
@@ -94,7 +94,7 @@ function permutation_unrank_lex(n: number, pos: number[][]): number[][] {
 }
 
 
-function formule2new_os(n: number, k: number, r: number, d0: number, d1: number): bigint {
+function formule2new_os(n: number, k: number, r: bigint, d0: number, d1: number): bigint {
   if (d0 >= d1) return 0n;
   if (d1 === 0) return ordered_stirling_numbers(n, k);
 
@@ -104,8 +104,8 @@ function formule2new_os(n: number, k: number, r: number, d0: number, d1: number)
   let coefB = BigInt(n - d1 - j);
   let acc = 0n;
 
-  while (n - r - (u + 1) >= 0) {
-    acc += (coefA - coefB) * ordered_stirling_numbers(n - r - u, k - 1);
+  while (n - Number(r) - (u + 1) >= 0) {
+    acc += (coefA - coefB) * ordered_stirling_numbers(n - Number(r) - u, k - 1);
     u += 1;
     j += 1;
     coefA = (coefA * BigInt(n - d0 - j)) / BigInt(u + 1);
@@ -155,7 +155,7 @@ function block_dicho_os(n: number, k: number, r: bigint): [number[], bigint] {
 }
 
 export function unrank_ordered_stirling_lex(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const n0 = n;
   const res: number[][] = [];
 
@@ -171,8 +171,8 @@ export function unrank_ordered_stirling_lex(n: number, k: number, r: bigint): nu
   return permutation_unrank_lex(n0, res);
 }
 
-function block_lex_unrank_lah(n: number, k: number, r: bigint): [number[], bigint] {
-  if (n <= 0 || k <= 0) return [];
+function block_lex_unrank_lah(n: number, k: number, r: bigint): [number[], bigint] | [] {
+  if (n <= 0 || k <= 0 || n < k) return [];
   const block: number[] = [];
   let size = 1;
   let contains1 = false;
@@ -234,7 +234,7 @@ function extract_part(part: number[][], dispo: number[]): number[][] {
 }
 
 export function unrank_lah_lex(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const part: number[][] = [];
   let size = n;
   let nb_block = k;
@@ -251,7 +251,7 @@ export function unrank_lah_lex(n: number, k: number, r: bigint): number[][] {
 }
 
 function unrank_ordered_lah_lex_block(n: number, k: number, r: bigint): [number[], bigint] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const ret: number[] = [];
   let elt = n;
   let nb = ordered_lah_numbers(elt, k) / BigInt(elt);
@@ -274,7 +274,7 @@ function unrank_ordered_lah_lex_block(n: number, k: number, r: bigint): [number[
 }
 
 export function unrank_ordered_lah_lex(n: number, k: number, r: bigint): number[][] {
-  if (n <= 0 || k <= 0) return [];
+  if (n <= 0 || k <= 0 || n < k) return [];
   const part: number[][] = [];
   let size = n;
   let nb_block = k;
@@ -291,8 +291,13 @@ export function unrank_ordered_lah_lex(n: number, k: number, r: bigint): number[
   return extract_part(part, Array.from({ length: n }, (_, i) => i + 1));
 }
 
-export function unrank_int_partitions_lex(n: number, k: number, r: bigint): number[] {
-  if (n <= 0 || k <= 0) return [];
+export function unrank_int_partitions_lex(n_: number, k_: number, r_: bigint): number[] {
+  // They will be mutated
+  let n = n_;
+  let k = k_;
+  let r = r_;
+
+  if (n <= 0 || k <= 0 || n < k) return [];
   const acc: number[] = [];
   let lem = 2;
 

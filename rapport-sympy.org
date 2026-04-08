@@ -1,0 +1,71 @@
+#+TITLE: Contribuer à SymPy
+#+LATEX_COMPILER: pdflatex
+#+LATEX_HEADER: \usepackage[margin=2cm]{geometry}
+#+LATEX_HEADER: \setlength{\parskip}{4pt}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \setminted{fontsize=\small, linenos=false, breaklines=true, frame=lines, framesep=4pt, bgcolor=gray!3, numbersep=8pt,style=emacs}
+#+ATTR_LATEX: :options {python}
+#+PROPERTY: header-args :exports code
+#+OPTIONS: toc:nil num:nil author:nil date:nil
+
+* Introduction
+
+SymPy est une bibliothèque Python de calcul symbolique, entièrement libre et sans dépendances
+externes. Dans le cadre de notre PSTL, nous cherchons à y intégrer des algorithmes d'unranking
+pour les 12 problèmes de Rota, des structures combinatoires fondamentales (partitions d'entiers,
+permutations, partitions d'ensembles, etc.) pour lesquelles des générateurs lexicographiques ont
+été récemment proposés. Contribuer à SymPy implique de respecter un processus de développement
+précis, que ce rapport décrit.
+
+* Le module =sympy.combinatorics=
+
+Le module =sympy.combinatorics= regroupe les structures combinatoires déjà disponibles dans SymPy.
+C'est dans ce module que s'intègrent naturellement les algorithmes d'unranking.
+Chaque structure y est représentée par une classe Python, avec des méthodes de génération
+et d'énumération. Nos contributions viendront étendre ces classes, en ajoutant la capacité de générer
+directement la ~k~-ième structure dans l'ordre lexicographique, sans énumérer les précédentes.
+
+* Mise en place de l'environnement
+
+La première étape est de forker le dépôt SymPy sur GitHub. Une fois le fork créé,
+nous travaillerons localement dans un environnement virtuel Python afin
+d'isoler les dépendances de développement:
+#+BEGIN_SRC bash
+  # depuis la racine du fork
+  # ces deux commandes sont éxecutés une seule fois
+  python -m venv .venv # créer l'environnement virtuel
+  pip install -r requirements-dev.txt # installer les dépandances
+  # activer l'environnement
+  source .venv/bin/activate
+#+END_SRC
+Les modifications seront ensuite soumises au dépôt principal via une pull request.
+
+* Processus de contribution
+
+Chaque contribution suit le même workflow: créer une branche dédiée, effectuer les modifications,
+puis ouvrir une pull request (vers la branche ~master~). Avant qu'une PR soit acceptée, plusieurs
+conditions doivent être remplies: les vérifications de qualité de code doivent passer, les nouvelles
+fonctions publiques doivent être documentées via des docstrings en ajoutant des exemples[fn:1],
+et des tests doivent être ajoutés.
+Les tests sont écrits en style ~pytest~:
+
+#+BEGIN_SRC python
+  def test_unrank_partition():
+      assert unrank_partition(0, 4) == [4]
+      assert unrank_partition(4, 4) == [1, 1, 1, 1]
+#+END_SRC
+
+Pour chaque ~sympy/<submodule>/<file>.py~ modifié, les tests doivent être dans ~sympy/<submodule> /tests/test_<file>.py~. [fn:2]
+
+La CI GitHub lance automatiquement ces vérifications à l'ouverture de la PR. Il faut également
+enregistrer son nom dans le fichier =.mailmap= du projet pour figurer dans la liste des auteurs.
+
+* Conclusion
+
+Le processus de contribution à SymPy est rigoureux mais bien documenté. L'intégration de nos
+algorithmes d'unranking au module =sympy.combinatorics= constitue l'aboutissement concret du
+projet, en soumettant un travail aux standards d'une bibliothèque scientifique de référence.
+
+
+[fn:1] https://docs.sympy.org/latest/contributing/docstring.html
+[fn:2] https://docs.sympy.org/latest/contributing/new-contributors-guide/writing-tests.html
