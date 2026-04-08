@@ -15,7 +15,21 @@ export function partitionsEqual(a: number[][], b: number[][]): boolean {
   return true;
 }
 
-
+/**
+ * Exhaustively verifies that an unranking function enumerates exactly the expected
+ * set of objects for given parameters (n, k). Specifically asserts that:
+ * - every unranked object passes the provided validity check (the structure, i.e., right
+     number of blocks, elements are in range, no duplicates within a partition, etc.)
+ * - no two distinct ranks produce the same object
+ * - the total number of objects matches the counting function
+ *
+ * @param n
+ * @param k
+ * @param countFn
+ * @param unrankFn
+ * @param validateFn: checks that an object is structurally valid
+ * @param equalFn: checks equality between two objects
+ */
 export function exhaustiveTest<T>(
   n: number,
   k: number,
