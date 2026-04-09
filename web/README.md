@@ -33,6 +33,8 @@ Tests cover:
 - **Combinatorial-order unranking:** exhaustive checks for small values of *n* and *k*, verifying structural validity, no duplicates, correct count, and canonical form
 - **Lexicographic-order unranking:** same exhaustive checks for the lex variants, plus lexicographic ordering
 
+Edge cases are covered as well.
+
 ## Libraries
 
 - [React](https://react.dev/): UI framework
