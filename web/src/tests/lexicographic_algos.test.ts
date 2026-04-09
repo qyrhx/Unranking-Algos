@@ -1,10 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { exhaustiveTest,
+import {
+  exhaustiveTest,
+  lexOrderTest,
   partitionsEqual,
   intPartitionsEqual,
+  isValidSetPartition,
   isValidIntPartition,
-  isValidSetPartition
-} from './test_utils';
+  isCanonicalStirling,
+  isCanonicalLah,
+  isCanonicalIntPartition,
+  lexLessSetPartition,
+  lexLessIntPartition,
+} from './test_utils.ts';
 import {
   stirling_numbers,
   ordered_stirling_numbers,
@@ -34,9 +41,20 @@ describe('Unranking - Lexicographic Order', () => {
             n, k,
             stirling_numbers,
             unrank_stirling_lex,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              isCanonicalStirling(p as number[][]),
             partitionsEqual
           );
+        }
+      }
+    });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 6; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, stirling_numbers, unrank_stirling_lex, lexLessSetPartition);
         }
       }
     });
@@ -50,9 +68,22 @@ describe('Unranking - Lexicographic Order', () => {
             n, k,
             ordered_stirling_numbers,
             unrank_ordered_stirling_lex,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              (p as number[][]).every(block =>
+                block.every((e, i) => i === 0 || e > block[i - 1])
+              ),
             partitionsEqual
           );
+        }
+      }
+    });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, ordered_stirling_numbers, unrank_ordered_stirling_lex, lexLessSetPartition);
         }
       }
     });
@@ -66,9 +97,20 @@ describe('Unranking - Lexicographic Order', () => {
             n, k,
             lah_numbers,
             unrank_lah_lex,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              isCanonicalLah(p as number[][]),
             partitionsEqual
           );
+        }
+      }
+    });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, lah_numbers, unrank_lah_lex, lexLessSetPartition);
         }
       }
     });
@@ -82,9 +124,19 @@ describe('Unranking - Lexicographic Order', () => {
             n, k,
             ordered_lah_numbers,
             unrank_ordered_lah_lex,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k,
             partitionsEqual
           );
+        }
+      }
+    }, 60000);
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, ordered_lah_numbers, unrank_ordered_lah_lex, lexLessSetPartition);
         }
       }
     }, 60000);
@@ -103,12 +155,21 @@ describe('Unranking - Lexicographic Order', () => {
             n, k,
             int_partitions,
             unrank_int_partitions_lex,
-            (p, n, k) => isValidIntPartition(p as number[], n, k),
+            (p, n, k) =>
+              isValidIntPartition(p as number[], n, k) &&
+              isCanonicalIntPartition(p as number[]),
             intPartitionsEqual
           );
         }
       }
     });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 10; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, int_partitions, unrank_int_partitions_lex, lexLessIntPartition);
+        }
+      }
+    });
   });
 });
-;

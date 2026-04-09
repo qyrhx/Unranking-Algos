@@ -29,9 +29,9 @@ npm run test
 
 Tests cover:
 
-- **Counting functions:** exact values for Stirling numbers, Lah numbers, ordered variants, and integer partitions, cross-checked against [Online Encyclopedia of Integer Sequences (OEIS)](http://oeis.org)
-- **Combinatorial-order unranking:** exhaustive bijection checks for small values of *n* and *k*
-- **Lexicographic-order unranking:** same exhaustive checks for the lex variants
+- **Counting functions:** exact values for Stirling numbers, Lah numbers, ordered variants, and integer partitions, cross-checked against the [OEIS](http://oeis.org)
+- **Combinatorial-order unranking:** exhaustive checks for small values of *n* and *k*, verifying structural validity, no duplicates, correct count, and canonical form
+- **Lexicographic-order unranking:** same exhaustive checks for the lex variants, plus lexicographic ordering
 
 ## Libraries
 

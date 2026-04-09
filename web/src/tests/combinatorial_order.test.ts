@@ -4,8 +4,11 @@ import {
   partitionsEqual,
   intPartitionsEqual,
   isValidSetPartition,
-  isValidIntPartition
-} from './test_utils';
+  isValidIntPartition,
+  isCanonicalStirling,
+  isCanonicalLah,
+  isCanonicalIntPartition,
+} from './test_utils.ts';
 import {
   stirling_numbers,
   ordered_stirling_numbers,
@@ -36,7 +39,10 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             stirling_numbers,
             unrank_stirling,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              isCanonicalStirling(p as number[][]),
             partitionsEqual
           );
         }
@@ -57,7 +63,14 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             ordered_stirling_numbers,
             unrank_ordered_stirling,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            // Ordered Stirling: blocks are an ordered sequence (no block sorting),
+            // but elements within each block are sets (sorted ascending).
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              (p as number[][]).every(block =>
+                block.every((e, i) => i === 0 || e > block[i - 1])
+              ),
             partitionsEqual
           );
         }
@@ -78,7 +91,12 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             lah_numbers,
             unrank_lah,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            // Lah: elements within blocks are ordered sequences (no intra-block sort),
+            // but blocks are sorted by their minimum element.
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k &&
+              isCanonicalLah(p as number[][]),
             partitionsEqual
           );
         }
@@ -99,7 +117,10 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             ordered_lah_numbers,
             unrank_ordered_lah,
-            (p, n, k) => isValidSetPartition(p as number[][], n) && (p as number[][]).length === k,
+            // Ordered Lah: fully ordered sequences of sequences — no canonical reordering.
+            (p, n, k) =>
+              isValidSetPartition(p as number[][], n) &&
+              (p as number[][]).length === k,
             partitionsEqual
           );
         }
@@ -121,7 +142,9 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             int_partitions,
             unrank_int_partitions,
-            (p, n, k) => isValidIntPartition(p as number[], n, k),
+            (p, n, k) =>
+              isValidIntPartition(p as number[], n, k) &&
+              isCanonicalIntPartition(p as number[]),
             intPartitionsEqual
           );
         }
