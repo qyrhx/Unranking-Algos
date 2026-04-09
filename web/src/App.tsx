@@ -10,8 +10,8 @@ export default function App() {
   const [selectedAlgo, setSelectedAlgo] = useState(Array.from(AlgoMap.keys())[0]);
   const [order, setOrder] = useState<Order>(Order.COMB);
 
-  const [result, setResult] = useState<any>("");
-  const [listResult, setListResult] = useState<{ r: number; structure: any[] }[] | null>(null);
+  const [result, setResult] = useState<unknown>("");
+  const [listResult, setListResult] = useState<{ r: number; structure: unknown[] }[] | null>(null);
   const [listTotal, setListTotal] = useState<string | null>(null);
   const [countExceedsLimit, setCountExceedsLimit] = useState(false);
 
@@ -84,7 +84,7 @@ export default function App() {
   const handleRandom  = () => send({ type: MsgType.RANDOM,   algo: selectedAlgo, n, k });
   const handleListAll = () => send({ type: MsgType.LIST_ALL, algo: selectedAlgo, n, k });
 
-  const formatStructure = (s: any) => {
+  const formatStructure = (s: unknown) => {
     const bold = (str: string) =>
       str.split(/(\[|\]|,|\d+)/).map((c, i) =>
         c === '[' || c === ']' || c === ',' ? <b key={i}>{c}</b> :
@@ -93,7 +93,7 @@ export default function App() {
       );
 
     if (Array.isArray(s) && Array.isArray(s[0])) {
-      return s.map((row: any[], i: number) => (
+      return s.map((row: unknown[], i: number) => (
         <span key={i}>{i > 0 ? "  " : ""}{bold(`[${row.join(", ")}]`)}</span>
       ));
     }

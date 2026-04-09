@@ -79,7 +79,7 @@ self.onmessage = (e) => {
     }
 
     self.postMessage({ error: "Unknown message type" });
-  } catch (err: any) {
+  } catch (err) {
     self.postMessage({ error: err.message || String(err) });
   }
 };

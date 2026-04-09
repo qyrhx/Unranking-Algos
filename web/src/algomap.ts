@@ -28,7 +28,7 @@ type AlgoEntry = {
   unrankFnComb: (n: number, k: number, r: bigint) => number[][] | number[];
   unrankFnLex: (n: number, k: number, r: bigint) => number[][] | number[];
 };
-export let AlgoMap = new Map<string, AlgoEntry>();
+export const AlgoMap = new Map<string, AlgoEntry>();
 
 AlgoMap.set("Stirling", {
   countFn: stirling_numbers,
