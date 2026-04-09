@@ -4,7 +4,7 @@ from "./counting_algos.ts"
 
 import {unrank_stirling, unrank_ordered_stirling,
   unrank_lah, unrank_ordered_lah, unrank_int_partitions}
-from "./combinatorial_order.ts"
+from "./combinatorial_order_algos.ts"
 
 import {unrank_stirling_lex, unrank_ordered_stirling_lex,
   unrank_lah_lex, unrank_ordered_lah_lex, unrank_int_partitions_lex}
