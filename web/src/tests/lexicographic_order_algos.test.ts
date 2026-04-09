@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   exhaustiveTest,
+  lexOrderTest,
   partitionsEqual,
   intPartitionsEqual,
   isValidSetPartition,
@@ -8,6 +9,8 @@ import {
   isCanonicalStirling,
   isCanonicalLah,
   isCanonicalIntPartition,
+  lexLessSetPartition,
+  lexLessIntPartition,
 } from './test_utils.ts';
 import {
   stirling_numbers,
@@ -17,19 +20,18 @@ import {
   int_partitions
 } from '../counting_algos';
 import {
-  unrank_stirling,
-  unrank_ordered_stirling,
-  unrank_lah,
-  unrank_ordered_lah,
-  unrank_int_partitions
-} from '../combinatorial_order';
+  unrank_stirling_lex,
+  unrank_ordered_stirling_lex,
+  unrank_lah_lex,
+  unrank_ordered_lah_lex,
+  unrank_int_partitions_lex
+} from '../lexicographic_order_algos';
 
-describe('Unranking - Combinatorial Order', () => {
-  describe('Stirling Set Partitions', () => {
+describe('Unranking - Lexicographic Order', () => {
+  describe('Stirling Set Partitions (Lex)', () => {
     it('returns empty array for invalid inputs', () => {
-      expect(unrank_stirling(0, 1, 0n)).toEqual([]);
-      expect(unrank_stirling(1, 0, 0n)).toEqual([]);
-      expect(unrank_stirling(1, 2, 0n)).toEqual([]);
+      expect(unrank_stirling_lex(0, 1, 0n)).toEqual([]);
+      expect(unrank_stirling_lex(1, 0, 0n)).toEqual([]);
     });
 
     it('exhaustive test for small values', () => {
@@ -38,7 +40,7 @@ describe('Unranking - Combinatorial Order', () => {
           exhaustiveTest(
             n, k,
             stirling_numbers,
-            unrank_stirling,
+            unrank_stirling_lex,
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
@@ -48,23 +50,24 @@ describe('Unranking - Combinatorial Order', () => {
         }
       }
     });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 6; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, stirling_numbers, unrank_stirling_lex, lexLessSetPartition);
+        }
+      }
+    });
   });
 
-  describe('Ordered Stirling Set Partitions', () => {
-    it('returns empty array for invalid inputs', () => {
-      expect(unrank_ordered_stirling(0, 1, 0n)).toEqual([]);
-      expect(unrank_ordered_stirling(1, 0, 0n)).toEqual([]);
-    });
-
+  describe('Ordered Stirling Set Partitions (Lex)', () => {
     it('exhaustive test for small values', () => {
       for (let n = 1; n <= 5; n++) {
         for (let k = 1; k <= n; k++) {
           exhaustiveTest(
             n, k,
             ordered_stirling_numbers,
-            unrank_ordered_stirling,
-            // Ordered Stirling: blocks are an ordered sequence (no block sorting),
-            // but elements within each block are sets (sorted ascending).
+            unrank_ordered_stirling_lex,
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
@@ -76,23 +79,24 @@ describe('Unranking - Combinatorial Order', () => {
         }
       }
     });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, ordered_stirling_numbers, unrank_ordered_stirling_lex, lexLessSetPartition);
+        }
+      }
+    });
   });
 
-  describe('Lah Partitions', () => {
-    it('returns empty array for invalid inputs', () => {
-      expect(unrank_lah(0, 1, 0n)).toEqual([]);
-      expect(unrank_lah(1, 0, 0n)).toEqual([]);
-    });
-
+  describe('Lah Partitions (Lex)', () => {
     it('exhaustive test for small values', () => {
       for (let n = 1; n <= 5; n++) {
         for (let k = 1; k <= n; k++) {
           exhaustiveTest(
             n, k,
             lah_numbers,
-            unrank_lah,
-            // Lah: elements within blocks are ordered sequences (no intra-block sort),
-            // but blocks are sorted by their minimum element.
+            unrank_lah_lex,
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
@@ -102,22 +106,24 @@ describe('Unranking - Combinatorial Order', () => {
         }
       }
     });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, lah_numbers, unrank_lah_lex, lexLessSetPartition);
+        }
+      }
+    });
   });
 
-  describe('Ordered Lah Partitions', () => {
-    it('returns empty array for invalid inputs', () => {
-      expect(unrank_ordered_lah(0, 1, 0n)).toEqual([]);
-      expect(unrank_ordered_lah(1, 0, 0n)).toEqual([]);
-    });
-
+  describe('Ordered Lah Partitions (Lex)', () => {
     it('exhaustive test for small values', () => {
       for (let n = 1; n <= 5; n++) {
         for (let k = 1; k <= n; k++) {
           exhaustiveTest(
             n, k,
             ordered_lah_numbers,
-            unrank_ordered_lah,
-            // Ordered Lah: fully ordered sequences of sequences — no canonical reordering.
+            unrank_ordered_lah_lex,
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k,
@@ -126,13 +132,20 @@ describe('Unranking - Combinatorial Order', () => {
         }
       }
     }, 60000);
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 5; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, ordered_lah_numbers, unrank_ordered_lah_lex, lexLessSetPartition);
+        }
+      }
+    }, 60000);
   });
 
-  describe('Integer Partitions', () => {
+  describe('Integer Partitions (Lex)', () => {
     it('returns empty array for invalid inputs', () => {
-      expect(unrank_int_partitions(0, 1, 0n)).toEqual([]);
-      expect(unrank_int_partitions(1, 0, 0n)).toEqual([]);
-      expect(unrank_int_partitions(1, 2, 0n)).toEqual([]);
+      expect(unrank_int_partitions_lex(0, 1, 0n)).toEqual([]);
+      expect(unrank_int_partitions_lex(1, 0, 0n)).toEqual([]);
     });
 
     it('exhaustive test for small values', () => {
@@ -141,12 +154,20 @@ describe('Unranking - Combinatorial Order', () => {
           exhaustiveTest(
             n, k,
             int_partitions,
-            unrank_int_partitions,
+            unrank_int_partitions_lex,
             (p, n, k) =>
               isValidIntPartition(p as number[], n, k) &&
               isCanonicalIntPartition(p as number[]),
             intPartitionsEqual
           );
+        }
+      }
+    });
+
+    it('output is in lexicographic order', () => {
+      for (let n = 1; n <= 10; n++) {
+        for (let k = 1; k <= n; k++) {
+          lexOrderTest(n, k, int_partitions, unrank_int_partitions_lex, lexLessIntPartition);
         }
       }
     });

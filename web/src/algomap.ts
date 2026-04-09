@@ -8,7 +8,7 @@ from "./combinatorial_order.ts"
 
 import {unrank_stirling_lex, unrank_ordered_stirling_lex,
   unrank_lah_lex, unrank_ordered_lah_lex, unrank_int_partitions_lex}
-from "./lexicographic_algos.ts"
+from "./lexicographic_order_algos.ts"
 
 export enum MsgType {
   COUNT,
