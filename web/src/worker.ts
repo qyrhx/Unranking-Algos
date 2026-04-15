@@ -20,8 +20,6 @@ function randomBigInt(max: bigint): bigint {
   return result;
 }
 
-// worker.ts
-
 function buildTree(results: { r: number; structure: any[] }[]): TreeNode | null {
   if (results.length === 0) return null;
 
@@ -104,28 +102,23 @@ self.onmessage = (e) => {
       const MAX_LIST = 200;
       const count = entry.countFn(n, k);
 
-      // 1. Check if empty
       if (count <= 0n) {
         self.postMessage({ type: MsgType.LIST_ALL, result: [], treeData: null, total: "0" });
         return;
       }
 
       const exceeds = count > BigInt(MAX_LIST);
-
-      // 2. NEW: If it exceeds the limit, stop here.
-      // Do not calculate results and do not generate treeData.
       if (exceeds) {
         self.postMessage({
           type: MsgType.LIST_ALL,
           result: null,
-          treeData: null,   // No partial graph
+          treeData: null,
           total: count.toString(),
           countExceedsLimit: true,
         });
         return;
       }
 
-      // 3. Otherwise, proceed with full calculation
       const limit = Number(count);
       const results = [];
       for (let i = 0; i < limit; i++) {

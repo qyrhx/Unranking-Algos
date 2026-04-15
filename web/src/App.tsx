@@ -144,10 +144,10 @@ export default function App() {
         <div style={{ marginBottom: "1rem" }}>
           <strong>Order:</strong><br/>
           <label>
-            <input type="radio" checked={order === Order.LEX} onChange={() => setOrder(Order.LEX)} /> Lex
+            <input type="radio" checked={order === Order.LEX} onChange={() => setOrder(Order.LEX)} /> Lexicographic
           </label>
           <label style={{ marginRight: "1em" }}>
-            <input type="radio" checked={order === Order.COMB} onChange={() => setOrder(Order.COMB)} /> Comb
+            <input type="radio" checked={order === Order.COMB} onChange={() => setOrder(Order.COMB)} /> Combinatorial
           </label>
         </div>
 
@@ -209,7 +209,7 @@ export default function App() {
             color: "#666",
             borderRadius: "8px"
           }}>
-            Select Lexicographic order and click List all to visualize the prefix tree.
+            <p>Click <b>List all</b> to visualize the prefix tree.</p>
           </div>
         )}
       </div>

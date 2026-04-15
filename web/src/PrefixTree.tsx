@@ -13,8 +13,6 @@ import "@xyflow/react/dist/style.css";
 import dagre from "@dagrejs/dagre";
 import { Order } from "./algomap.ts";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 interface PrefixTreeProps {
   treeRoot: TreeNode | null; // Received pre-built from worker via App.tsx
   order: Order;
@@ -40,8 +38,6 @@ interface NodeData {
   onToggle: (id: string) => void;
   [key: string]: unknown;
 }
-
-// ─── Dagre layout ─────────────────────────────────────────────────────────────
 
 const NODE_W = 110;
 const NODE_H = 34;
@@ -118,8 +114,6 @@ function layoutTree(
   return { nodes, edges };
 }
 
-// ─── Custom node ──────────────────────────────────────────────────────────────
-
 function PrefixNode({ id, data }: NodeProps) {
   const d = data as NodeData;
   const label = d.isRoot ? "∅" : `[${JSON.stringify(d.prefix || []).slice(1, -1)}]`;
@@ -163,12 +157,9 @@ function PrefixNode({ id, data }: NodeProps) {
 
 const nodeTypes = { prefixNode: PrefixNode };
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export default function PrefixTree({ treeRoot, order }: PrefixTreeProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  // UseEffect to auto-collapse nodes based on depth OR child count
   useEffect(() => {
     if (!treeRoot) {
       setCollapsed(new Set());
