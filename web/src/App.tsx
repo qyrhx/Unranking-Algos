@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { AlgoMap, Order, MsgType } from "./algomap.ts";
+import PrefixTree from "./PrefixTree";
 
 export default function App() {
   // Inputs
@@ -8,10 +9,11 @@ export default function App() {
   const [r, setR] = useState<number>(0);
 
   const [selectedAlgo, setSelectedAlgo] = useState(Array.from(AlgoMap.keys())[0]);
-  const [order, setOrder] = useState<Order>(Order.COMB);
+  const [order, setOrder] = useState<Order>(Order.LEX);
 
   const [result, setResult] = useState<unknown>("");
   const [listResult, setListResult] = useState<{ r: number; structure: unknown[] }[] | null>(null);
+  const [treeData, setTreeData] = useState<any>(null);
   const [listTotal, setListTotal] = useState<string | null>(null);
   const [countExceedsLimit, setCountExceedsLimit] = useState(false);
 
@@ -52,6 +54,7 @@ export default function App() {
       if (data.type === MsgType.LIST_ALL) {
         setResult("");
         setListResult(data.result);
+        setTreeData(data.treeData);
         setListTotal(data.total);
         setCountExceedsLimit(data.countExceedsLimit);
         return;
@@ -104,101 +107,112 @@ export default function App() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "1rem auto" }}>
-      <h2>Unranking</h2>
+    <div style={{
+      display: "flex",
+      gap: "2rem",
+      padding: "1rem",
+      height: "95vh", // Fill the screen
+      fontFamily: "sans-serif"
+    }}>
+      <title>Twelvefold Unranking</title>
+      {/* LEFT COLUMN: Controls & Results */}
+      <div style={{
+        width: "350px",
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        overflowY: "auto"
+      }}>
+        <h2 style={{ marginTop: 0 }}>Unranking</h2>
 
-      {/* Numeric inputs */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>n: <input type="number" value={n} onChange={e => setN(Number(e.target.value))} /></label><br />
-        <label>k: <input type="number" value={k} onChange={e => setK(Number(e.target.value))} /></label><br />
-        <label>r: <input type="number" value={r} onChange={e => setR(Number(e.target.value))} /></label>
-      </div>
+        <div style={{ marginBottom: "1rem" }}>
+          <label>n: <input type="number" value={n} onChange={e => setN(Number(e.target.value))} /></label><br />
+          <label>k: <input type="number" value={k} onChange={e => setK(Number(e.target.value))} /></label><br />
+          <label>r: <input type="number" value={r} onChange={e => setR(Number(e.target.value))} /></label>
+        </div>
 
-      {/* Algorithm selection */}
-      <div style={{ marginBottom: "1rem" }}>
-        <p>Select algorithm:</p>
-        {Array.from(AlgoMap.keys()).map(algo => (
-          <label key={algo} style={{ display: "block" }}>
-            <input
-              type="radio"
-              name="algorithm"
-              checked={selectedAlgo === algo}
-              onChange={() => setSelectedAlgo(algo)}
-            />
-            {algo}
+        <div style={{ marginBottom: "1rem" }}>
+          <strong>Algorithm:</strong>
+          {Array.from(AlgoMap.keys()).map(algo => (
+            <label key={algo} style={{ display: "block", fontSize: "0.9rem" }}>
+              <input type="radio" checked={selectedAlgo === algo} onChange={() => setSelectedAlgo(algo)} />
+              {algo}
+            </label>
+          ))}
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <strong>Order:</strong><br/>
+          <label>
+            <input type="radio" checked={order === Order.LEX} onChange={() => setOrder(Order.LEX)} /> Lex
           </label>
-        ))}
-      </div>
-
-      {/* Order selection */}
-      <div style={{ marginBottom: "1rem" }}>
-        <p>Unranking order:</p>
-        <label style={{ marginRight: "1em" }}>
-          <input
-            type="radio"
-            name="order"
-            checked={order === Order.COMB}
-            onChange={() => setOrder(Order.COMB)}
-          />
-          Combinatorial
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="order"
-            checked={order === Order.LEX}
-            onChange={() => setOrder(Order.LEX)}
-          />
-          Lexicographic
-        </label>
-      </div>
-
-      {/* Buttons */}
-      <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5em", flexWrap: "wrap" }}>
-        <button onClick={handleCount}   disabled={loading}>Count</button>
-        <button onClick={handleUnrank}  disabled={loading}>Unrank</button>
-        <button onClick={handleRandom}  disabled={loading}>Random r</button>
-        <button onClick={handleListAll} disabled={loading}>List all</button>
-        {loading && <button onClick={abortCalculation}>Abort</button>}
-      </div>
-
-      {/* Single result */}
-      {result && (
-        <div>
-          <strong>Result:</strong>
-          <div style={{
-            marginTop: "0.5rem", padding: "0.5rem", maxHeight: "300px",
-            overflowX: "auto", whiteSpace: "pre", overflowY: "auto",
-            background: "#f0f0f0", minHeight: "1.5em", fontFamily: "monospace"
-          }}>
-            {typeof result === 'string' ? result : Array.isArray(result) ? formatStructure(result) : result}
-          </div>
+          <label style={{ marginRight: "1em" }}>
+            <input type="radio" checked={order === Order.COMB} onChange={() => setOrder(Order.COMB)} /> Comb
+          </label>
         </div>
-      )}
 
-      {/* List all result */}
-      {listResult && (
-        <div style={{ marginTop: "1rem" }}>
-          <strong>All structures ({listTotal} total):</strong>
-          <div style={{
-            marginTop: "0.5rem", padding: "0.5rem", maxHeight: "500px",
-            overflowY: "auto", background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.9em",
-          }}>
-            {countExceedsLimit
-              ? <span style={{ color: "#dc2626" }}>Count too large to list ({listTotal} structures).</span>
-              : listResult.map(({ r: rank, structure }) => (
-                <div key={rank}>
-                  <span style={{ color: "#888", marginRight: "0.5em",
-                    display: "inline-block", width: "7ch"
-                  }}>
-                    r={rank}
-                  </span>
-                  {formatStructure(structure)}
-                </div>
-              ))}
-          </div>
+        <div style={{ marginBottom: "1rem", display: "flex", gap: "0.4em", flexWrap: "wrap" }}>
+          <button onClick={handleCount} disabled={loading}>Count</button>
+          <button onClick={handleUnrank} disabled={loading}>Unrank</button>
+          <button onClick={handleRandom} disabled={loading}>Random r</button>
+          <button onClick={handleListAll} disabled={loading}>List all</button>
+          {loading && <button onClick={abortCalculation}>Abort</button>}
         </div>
-      )}
+
+        {/* Results Area */}
+        <div style={{ flex: 1 }}>
+          {result && (
+            <div style={{ marginBottom: "1rem" }}>
+              <strong>Result:</strong>
+              <div style={{
+                marginTop: "0.4rem", padding: "0.5rem", maxHeight: "150px",
+                overflow: "auto", whiteSpace: "pre",
+                background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.85rem"
+              }}>
+                {typeof result === 'string' ? result : Array.isArray(result) ? formatStructure(result) : result}
+              </div>
+            </div>
+          )}
+
+          {(listResult || countExceedsLimit) && (
+            <div>
+              <strong>All ({listTotal}):</strong>
+              <div style={{
+                marginTop: "0.4rem", padding: "0.5rem", maxHeight: "400px",
+                overflowY: "auto", background: "#f0f0f0", fontFamily: "monospace", fontSize: "0.85rem",
+              }}>
+                {countExceedsLimit
+                  ? <span style={{ color: "#dc2626" }}>Too many to list.</span>
+                  : listResult.map(({ r: rank, structure }) => (
+                    <div key={rank} style={{ borderBottom: "1px solid #ddd", padding: "2px 0" }}>
+                      <span style={{ color: "#888", width: "5ch", display: "inline-block" }}>r={rank}</span>
+                      {formatStructure(structure)}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: The Big Graph */}
+      <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column" }}>
+        {/*order === Order.LEX && */listResult ? (
+          <PrefixTree treeRoot={treeData} order={order} />
+        ) : (
+          <div style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "2px dashed #ccc",
+            color: "#666",
+            borderRadius: "8px"
+          }}>
+            Select Lexicographic order and click List all to visualize the prefix tree.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

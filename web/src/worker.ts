@@ -20,6 +20,49 @@ function randomBigInt(max: bigint): bigint {
   return result;
 }
 
+// worker.ts
+
+function buildTree(results: { r: number; structure: any[] }[]): TreeNode | null {
+  if (results.length === 0) return null;
+
+  const root: TreeNode = {
+    id: "root",
+    prefix: [],
+    rank: null,
+    children: [],
+    rankFirst: results[0].r,
+    rankLast: results[results.length - 1].r
+  };
+
+  for (const { r, structure } of results) {
+    let currentNode = root;
+    for (let i = 0; i < structure.length; i++) {
+      const val = structure[i];
+      // Create a prefix array for this depth
+      const currentPrefix = structure.slice(0, i + 1);
+      const id = JSON.stringify(currentPrefix);
+
+      let child = currentNode.children.find(c => c.id === id);
+      if (!child) {
+        child = {
+          id,
+          prefix: currentPrefix, // Crucial: This fixes the 'join' error
+          rank: i === structure.length - 1 ? r : null,
+          children: [],
+          rankFirst: r,
+          rankLast: r
+        };
+        currentNode.children.push(child);
+      } else {
+        // Update the range for internal nodes
+        child.rankLast = r;
+      }
+      currentNode = child;
+    }
+  }
+  return root;
+}
+
 self.onmessage = (e) => {
   try {
     const { type, algo, n, k, r, order } = e.data;
@@ -60,20 +103,43 @@ self.onmessage = (e) => {
     if (type === MsgType.LIST_ALL) {
       const MAX_LIST = 200;
       const count = entry.countFn(n, k);
+
+      // 1. Check if empty
       if (count <= 0n) {
-        self.postMessage({ type: MsgType.LIST_ALL, result: [], total: 0 });
+        self.postMessage({ type: MsgType.LIST_ALL, result: [], treeData: null, total: "0" });
         return;
       }
-      const limit = count > BigInt(MAX_LIST) ? MAX_LIST : Number(count);
+
+      const exceeds = count > BigInt(MAX_LIST);
+
+      // 2. NEW: If it exceeds the limit, stop here.
+      // Do not calculate results and do not generate treeData.
+      if (exceeds) {
+        self.postMessage({
+          type: MsgType.LIST_ALL,
+          result: null,
+          treeData: null,   // No partial graph
+          total: count.toString(),
+          countExceedsLimit: true,
+        });
+        return;
+      }
+
+      // 3. Otherwise, proceed with full calculation
+      const limit = Number(count);
       const results = [];
       for (let i = 0; i < limit; i++) {
         results.push({ r: i, structure: unrankFn(n, k, BigInt(i)) });
       }
+
+      const treeData = buildTree(results);
+
       self.postMessage({
         type: MsgType.LIST_ALL,
         result: results,
+        treeData: treeData,
         total: count.toString(),
-        countExceedsLimit: count > BigInt(MAX_LIST),
+        countExceedsLimit: false,
       });
       return;
     }
