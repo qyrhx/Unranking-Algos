@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   exhaustiveTest,
   lexOrderTest,
-  partitionsEqual,
-  intPartitionsEqual,
   isValidSetPartition,
   isValidIntPartition,
   isCanonicalStirling,
@@ -44,8 +42,7 @@ describe('Unranking - Lexicographic Order', () => {
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
-              isCanonicalStirling(p as number[][]),
-            partitionsEqual
+              isCanonicalStirling(p as number[][])
           );
         }
       }
@@ -73,8 +70,7 @@ describe('Unranking - Lexicographic Order', () => {
               (p as number[][]).length === k &&
               (p as number[][]).every(block =>
                 block.every((e, i) => i === 0 || e > block[i - 1])
-              ),
-            partitionsEqual
+              )
           );
         }
       }
@@ -100,8 +96,7 @@ describe('Unranking - Lexicographic Order', () => {
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
-              isCanonicalLah(p as number[][]),
-            partitionsEqual
+              isCanonicalLah(p as number[][])
           );
         }
       }
@@ -126,8 +121,7 @@ describe('Unranking - Lexicographic Order', () => {
             unrank_ordered_lah_lex,
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
-              (p as number[][]).length === k,
-            partitionsEqual
+              (p as number[][]).length === k
           );
         }
       }
@@ -157,8 +151,7 @@ describe('Unranking - Lexicographic Order', () => {
             unrank_int_partitions_lex,
             (p, n, k) =>
               isValidIntPartition(p as number[], n, k) &&
-              isCanonicalIntPartition(p as number[]),
-            intPartitionsEqual
+              isCanonicalIntPartition(p as number[])
           );
         }
       }

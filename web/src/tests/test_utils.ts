@@ -4,22 +4,6 @@ export function fmt(obj: unknown): string {
   return JSON.stringify(obj);
 }
 
-export function partitionsEqual(a: number[][], b: number[][]): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].length !== b[i].length) return false;
-    for (let j = 0; j < a[i].length; j++) {
-      if (a[i][j] !== b[i][j]) return false;
-    }
-  }
-  return true;
-}
-
-export function intPartitionsEqual(a: number[], b: number[]): boolean {
-  if (a.length !== b.length) return false;
-  return a.every((val, idx) => val === b[idx]);
-}
-
 export function isValidSetPartition(partition: number[][], n: number): boolean {
   const seen = new Set<number>();
   for (const block of partition) {
@@ -110,12 +94,11 @@ export function exhaustiveTest<T>(
   countFn: (n: number, k: number) => bigint,
   unrankFn: (n: number, k: number, r: bigint) => T,
   validateFn: (obj: T, n: number, k: number) => boolean,
-  equalFn: (a: T, b: T) => boolean
 ): void {
   const count = countFn(n, k);
   if (count === 0n) return;
 
-  const seen: T[] = [];
+  const seen = new Set<string>();
   for (let r = 0n; r < count; r++) {
     const obj = unrankFn(n, k, r);
 
@@ -124,18 +107,12 @@ export function exhaustiveTest<T>(
       `Invalid object at n=${n}, k=${k}, rank=${r}: ${fmt(obj)}`
     ).toBe(true);
 
-    for (const prev of seen) {
-      expect(
-        equalFn(obj, prev),
-        `Duplicate at n=${n}, k=${k}, rank=${r}: ${fmt(obj)} already seen as ${fmt(prev)}`
-      ).toBe(false);
-    }
-    seen.push(obj);
+    seen.add(JSON.stringify(obj));
   }
 
   expect(
-    BigInt(seen.length),
-    `Wrong count at n=${n}, k=${k}: generated ${seen.length} objects but expected ${count}`
+    BigInt(seen.size),
+      `Wrong count at n=${n}, k=${k}: generated ${seen.size} objects but expected ${count}`
   ).toBe(count);
 }
 

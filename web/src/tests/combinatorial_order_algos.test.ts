@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   exhaustiveTest,
-  partitionsEqual,
-  intPartitionsEqual,
   isValidSetPartition,
   isValidIntPartition,
   isCanonicalStirling,
@@ -42,8 +40,7 @@ describe('Unranking - Combinatorial Order', () => {
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
-              isCanonicalStirling(p as number[][]),
-            partitionsEqual
+              isCanonicalStirling(p as number[][])
           );
         }
       }
@@ -70,8 +67,7 @@ describe('Unranking - Combinatorial Order', () => {
               (p as number[][]).length === k &&
               (p as number[][]).every(block =>
                 block.every((e, i) => i === 0 || e > block[i - 1])
-              ),
-            partitionsEqual
+              )
           );
         }
       }
@@ -91,13 +87,10 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             lah_numbers,
             unrank_lah,
-            // Lah: elements within blocks are ordered sequences (no intra-block sort),
-            // but blocks are sorted by their minimum element.
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
               (p as number[][]).length === k &&
-              isCanonicalLah(p as number[][]),
-            partitionsEqual
+              isCanonicalLah(p as number[][])
           );
         }
       }
@@ -117,11 +110,9 @@ describe('Unranking - Combinatorial Order', () => {
             n, k,
             ordered_lah_numbers,
             unrank_ordered_lah,
-            // Ordered Lah: fully ordered sequences of sequences — no canonical reordering.
             (p, n, k) =>
               isValidSetPartition(p as number[][], n) &&
-              (p as number[][]).length === k,
-            partitionsEqual
+              (p as number[][]).length === k
           );
         }
       }
@@ -144,8 +135,7 @@ describe('Unranking - Combinatorial Order', () => {
             unrank_int_partitions,
             (p, n, k) =>
               isValidIntPartition(p as number[], n, k) &&
-              isCanonicalIntPartition(p as number[]),
-            intPartitionsEqual
+              isCanonicalIntPartition(p as number[])
           );
         }
       }
